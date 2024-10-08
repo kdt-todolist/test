@@ -15,12 +15,14 @@ const TaskDashboard: React.FC = () => {
   const handleDragEnd = (result: any) => {
     if (!result.destination || !taskContext) return;
 
+    const { source, destination } = result;
+
     // 전체 Task 배열을 복사
     const reorderedTasks = Array.from(taskContext.tasks);
 
     // 순서를 변경할 Task를 추출한 뒤, 원래 위치에서 제거하고 새로운 위치에 삽입
-    const [movedTask] = reorderedTasks.splice(result.source.index, 1);
-    reorderedTasks.splice(result.destination.index, 0, movedTask);
+    const [movedTask] = reorderedTasks.splice(source.index, 1);
+    reorderedTasks.splice(destination.index, 0, movedTask);
 
     // TaskContext에서 순서가 변경된 Task 배열을 업데이트
     taskContext.updateTaskOrder(reorderedTasks);
@@ -37,7 +39,7 @@ const TaskDashboard: React.FC = () => {
               className="masonry grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
               {...provided.droppableProps}
               ref={provided.innerRef}
-              style={{ minHeight: '100px' }}
+              style={{ minHeight: '100px' }}  // Droppable 영역이 최소 높이를 가집니다
             >
               {incompleteTasks.map((task, index) => (
                 <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
@@ -45,14 +47,16 @@ const TaskDashboard: React.FC = () => {
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      {...provided.dragHandleProps}
                       style={{
                         ...provided.draggableProps.style,
-                        opacity: snapshot.isDragging ? 0.5 : 1,  // Change opacity while dragging
-                        marginBottom: '10px',  // Add margin between cards
+                        opacity: snapshot.isDragging ? 0.5 : 1,  // 드래그 중에는 불투명도 변경
+                        marginBottom: '10px',  // 카드 간격을 위한 여백 추가
                       }}
                     >
-                      <TaskCard key={task.id} task={task} />
+                      <TaskCard
+                        task={task}
+                        dragHandleProps={provided.dragHandleProps} // dragHandleProps를 TaskCard에 전달합니다.
+                      />
                     </div>
                   )}
                 </Draggable>

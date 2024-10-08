@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { TaskContext, Task } from '../../contexts/TaskContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faX } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faX } from '@fortawesome/free-solid-svg-icons';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const TaskDrawer: React.FC = () => {
@@ -72,7 +72,7 @@ const TaskDrawer: React.FC = () => {
           onClick={handleAddTask}
           className="ml-2 bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition"
         >
-          추가
+            <FontAwesomeIcon icon={faPlus} />
         </button>
       </div>
 
