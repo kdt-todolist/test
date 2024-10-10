@@ -1,11 +1,11 @@
 import React from "react";
 
-function InputField() {
+function Dialog(props) {
   return (
     <div>
-      <input />
+      
     </div>
   );
 }
 
-export default InputField;
+export default Dialog;
