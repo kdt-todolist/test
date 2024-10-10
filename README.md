@@ -91,9 +91,7 @@
   - `App.jsx`: 최상위 앱 컴포넌트로 전체 라우팅을 담당하며, 주요 컴포넌트들을 구성합니다.
   - `index.js`: 애플리케이션의 진입 파일로, ReactDOM.render를 사용해 앱을 렌더링합니다.
 
-## 프로젝트 
-
-### 요구 사항 ⚙️
+### 프로젝트 요구 사항 ⚙️
 
 - **Node.js (v14 이상)**: 애플리케이션을 실행하기 위한 자바스크립트 런타임 환경입니다.
 - **npm**: 패키지 관리를 위한 도구입니다.
@@ -129,17 +127,17 @@
 
 ## 팀원 및 역할 👥
 
-- 김정현 🔗 [CodingKirby](https://github.com/CodingKirby)
-  - Readme.md 작성
-  - **백엔드 연동 및 API 관리**
-    - Axios를 사용한 백엔드와의 통신 기능 개발 및 Context를 통해 상태 관리, API 통신 오류 처리 및 데이터 유지 관리.
-- 윤혜원 🔗 [hyenee99](https://github.com/hyenee99)
-  - **Task 관리 컴포넌트 개발**
-    - 할 일(Task) 및 세부 할 일(SubTask) UI와 관련된 작업, 사용자가 쉽게 할 일을 추가하고 수정할 수 있는 기능 개발.
-- 김재영 🔗 [jae-yon](https://github.com/jae-yon)
-  - Figma 작성 및 UI 디자인
-  - **공통 컴포넌트 개발**
-    - 로그인/회원가입 모달 및 버튼, 입력 필드 등 공통 UI 컴포넌트 개발.
-- 김바울 🔗 [freepaul-kor](https://github.com/freepaul-kor)
-  - **컴포넌트 배치 및 드래그 앤 드롭 기능 구현**
-    - 각 컴포넌트 배치와 `react-beautiful-dnd`를 사용해 Task 및 SubTask의 순서 변경 기능 개발, 드래그 앤 드롭 UX 최적화.
+### 김정현 🔗 [CodingKirby](https://github.com/CodingKirby)
+- Readme.md 작성
+- **백엔드 연동 및 API 관리**
+ - Axios를 사용한 백엔드와의 통신 기능 개발 및 Context를 통해 상태 관리, API 통신 오류 처리 및 데이터 유지 관리.
+### 윤혜원 🔗 [hyenee99](https://github.com/hyenee99)
+- **Task 관리 컴포넌트 개발**
+ - 할 일(Task) 및 세부 할 일(SubTask) UI와 관련된 작업, 사용자가 쉽게 할 일을 추가하고 수정할 수 있는 기능 개발.
+### 김재영 🔗 [jae-yon](https://github.com/jae-yon)
+- Figma 작성 및 UI 디자인
+- **공통 컴포넌트 개발**
+ - 로그인/회원가입 모달 및 버튼, 입력 필드 등 공통 UI 컴포넌트 개발.
+### 김바울 🔗 [freepaul-kor](https://github.com/freepaul-kor)
+- **컴포넌트 배치 및 드래그 앤 드롭 기능 구현**
+ - 각 컴포넌트 배치와 `react-beautiful-dnd`를 사용해 Task 및 SubTask의 순서 변경 기능 개발, 드래그 앤 드롭 UX 최적화.
