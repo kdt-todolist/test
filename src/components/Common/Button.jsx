@@ -19,6 +19,11 @@ const VARIANTS = {
     --button-bg-color: #ffc107;
     --button-hover-bg-color: #e0a800;
   `,
+  light: css`
+    --button-bg-color: #e2e6ea;
+    --button-hover-bg-color: #d3d9df;
+    --button-color: #212529;
+  `,
 };
 
 const SIZES = {
@@ -37,7 +42,7 @@ const SIZES = {
 };
 
 
-function Button({ lable, size, border, variant }) {
+function Button({ label, size, border, variant, onClick }) {
   
   const sizeStyle = SIZES[size];
   const borderStyle = BORDER[border];
@@ -49,8 +54,9 @@ function Button({ lable, size, border, variant }) {
       sizeStyle={sizeStyle}
       borderStyle={borderStyle}
       variantStyle={variantStyle}
+      onClick={onClick}
     >
-      {lable}
+      {label}
     </CustomButton>
   );
 }
