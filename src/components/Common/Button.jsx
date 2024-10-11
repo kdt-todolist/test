@@ -1,7 +1,8 @@
 import styled, { css } from "styled-components";
 
 // 버튼 기본
-const StyledButton = styled.button`
+const CustomButton = styled.button
+`
   ${(p) => p.sizeStyle}
   ${(p) => p.borderStyle}
   ${(p) => p.colorStyle}
@@ -74,7 +75,7 @@ const SIZES = {
 };
 
 function Button(props) {
-  const { children, size, color, border } = props;
+  const { children, size, color, border, onClick } = props;
 
   const sizeStyle = SIZES[size];
   const colorStyle = COLOR[color];
@@ -85,6 +86,7 @@ function Button(props) {
       sizeStyle={sizeStyle}
       colorStyle={colorStyle}
       borderStyle={borderStyle}
+      onClick={onClick}
     >
       {children}
     </StyledButton>
