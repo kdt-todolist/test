@@ -1,7 +1,6 @@
 import styled, { css } from "styled-components";
 
 const StyledInput = styled.input`
-
   ${(p) => p.sizestyle}
   ${(p) => p.borderstyle}
 
@@ -21,7 +20,7 @@ const BORDER = {
   pill: css`
     --input-radius: 999px;
   `,
-}
+};
 
 const SIZES = {
   sm: css`
@@ -38,23 +37,21 @@ const SIZES = {
     --input-font-size: 18px;
     --input-font-weight: 600;
     --input-padding: 15px 20px;
-  `
+  `,
 };
 
-function InputField(props) {
-  const { children, size, border, placeholder } = props;
-
+function InputField({ size, border, placeholder, value, onChange }) {
   const sizestyle = SIZES[size];
   const borderstyle = BORDER[border];
 
   return (
-    <StyledInput 
+    <StyledInput
       sizestyle={sizestyle}
       borderstyle={borderstyle}
       placeholder={placeholder}
-    >
-      {children}
-    </StyledInput>
+      value={value}           // value를 전달
+      onChange={onChange}     // onChange를 전달
+    />
   );
 }
 
