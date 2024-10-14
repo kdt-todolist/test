@@ -17,7 +17,7 @@ const StyledButton = styled.button
   padding: var(--button-padding, 10px 20px);
   border-radius: var(--button-radius, 5px);
   background: var(--button-bg-color, rgb(59 130 246));
-  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+  box-shadow: var(--button-box-shadow, rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px);
 
   &:active, &:hover, &:focus {
     background: var(--button-hover-bg-color, rgb(29 78 216));
@@ -54,6 +54,12 @@ const COLOR = {
   gray: css`
     --button-bg-color: rgb(107 114 128);
     --button-hover-bg-color: rgb(55 65 81);
+  `,
+  transparent: css`
+    --button-bg-color: transparent;
+    --button-hover-bg-color: transparent;
+    --button-box-shadow: none;
+    --button-color: white;
   `,
 };
 // 버튼 사이즈
