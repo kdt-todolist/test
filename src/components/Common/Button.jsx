@@ -1,22 +1,23 @@
 import styled, { css } from "styled-components";
 
 // 버튼 기본
-const CustomButton = styled.button
+const StyledButton = styled.button
 `
-  ${(p) => p.sizeStyle}
-  ${(p) => p.borderStyle}
-  ${(p) => p.colorStyle}
+  ${(p) => p.sizestyle}
+  ${(p) => p.colorstyle}
+  ${(p) => p.borderstyle}
 
   margin: 0;
   border: none;
   cursor: pointer;
   font-family: "Noto Sans KR", sans-serif;
   color: var(--button-color, rgb(255 255 255));
-  font-size: var(--button-font-size, 1rem);
+  font-size: var(--button-font-size, 16px);
   font-weight: var(--button-font-weight, 600);
   padding: var(--button-padding, 10px 20px);
   border-radius: var(--button-radius, 5px);
   background: var(--button-bg-color, rgb(59 130 246));
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
 
   &:active, &:hover, &:focus {
     background: var(--button-hover-bg-color, rgb(29 78 216));
@@ -58,17 +59,17 @@ const COLOR = {
 // 버튼 사이즈
 const SIZES = {
   sm: css`
-    --button-font-size: 0.75rem;
-    --button-font-weight: 500;
-    --button-padding: 5px 10px;
+    --button-font-size: 12px;
+    --button-font-weight: 600;
+    --button-padding: 7.5px 10px;
   `,
   md: css`
-    --button-font-size: 1rem;
+    --button-font-size: 16px;
     --button-font-weight: 600;
     --button-padding: 10px 20px;
   `,
   lg: css`
-    --button-font-size: 1.25rem;
+    --button-font-size: 18px;
     --button-font-weight: 700;
     --button-padding: 15px 30px;
   `
@@ -77,15 +78,15 @@ const SIZES = {
 function Button(props) {
   const { children, size, color, border, onClick } = props;
 
-  const sizeStyle = SIZES[size];
-  const colorStyle = COLOR[color];
-  const borderStyle = BORDER[border];
+  const sizestyle = SIZES[size];
+  const colorstyle = COLOR[color];
+  const borderstyle = BORDER[border];
 
   return (
     <StyledButton 
-      sizeStyle={sizeStyle}
-      colorStyle={colorStyle}
-      borderStyle={borderStyle}
+      sizestyle={sizestyle}
+      colorstyle={colorstyle}
+      borderstyle={borderstyle}
       onClick={onClick}
     >
       {children}
