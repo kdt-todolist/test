@@ -1,127 +1,110 @@
 import { BsPlusCircleDotted } from "react-icons/bs";
-import Modal from '../Common/Modal';
 import { MdOutlineModeEdit } from "react-icons/md";
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { useState } from "react";
-function TaskCard({ task }) {
-  const [open, setOpen] = useState(false);
-  const [tasks, setTasks] = useState([]);
-  const [inputValue, setInputValue] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentTaskId, setCurrentTaskId] = useState(null);
-  const [isChecked, setIsChecked] = useState(false);
+import { useState, useContext } from "react";
+import { TaskContext } from "../../contexts/TaskContext"; // TaskContext 가져오기
+import Button from "../Common/Button";
+import InputField from "../Common/InputField";
+import Modal from '../Common/Modal';
 
-  const getInputValue = () => {
+function TaskCard({ task, dragHandleProps }) {
+  const { updateSubTaskCheck, updateSubTaskTitle, deleteSubTask, addSubTask } = useContext(TaskContext); // TaskContext에서 필요한 메서드 가져오기
+  const [open, setOpen] = useState(false);
+  const [inputValue, setInputValue] = useState(''); // 서브 태스크 텍스트 입력 값
+  const [isEditing, setIsEditing] = useState(false); // 서브 태스크 편집 모드
+  const [currentSubTaskId, setCurrentSubTaskId] = useState(null); // 현재 편집 중인 서브 태스크 ID 저장
+
+  // 서브 태스크 추가 처리 함수
+  const handleAddSubTask = () => {
     if (inputValue.trim() === '') return; // 빈 입력 방지
-    const newTask = { id: Date.now(), text: inputValue, isChecked: false }; // 고유 ID 추가
-    setTasks([...tasks, newTask]); // 새 작업 추가
-    setInputValue(''); // 입력란 초기화
+
+    const newSubTask = { id: Date.now(), text: inputValue, isChecked: false };
+    addSubTask(task.id, newSubTask); // TaskContext의 addSubTask 호출
+    setInputValue(''); // 입력 값 초기화
     setOpen(false); // 모달 닫기
   };
 
-  const handleMouseEnter = (index) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].showButtons = true; // 버튼 보이기
-    setTasks(updatedTasks);
-  };
+  // 서브 태스크 제목 수정 처리 함수
+  const handleUpdateSubTaskTitle = () => {
+    if (inputValue.trim() === '') return;
 
-  const handleMouseLeave = (index) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].showButtons = false; // 버튼 숨기기
-    setTasks(updatedTasks);
-  };
-
-  const handleCheckbox = (index) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].isChecked = !updatedTasks[index].isChecked; // 체크 상태 반전
-    setTasks(updatedTasks); // 상태 업데이트
-  };
-
-
-  const updateTask = () => {
-    // 작업 업데이트 로직
-    if (inputValue.trim() === '') return; // 빈 입력 방지
-    const updatedTasks = tasks.map((task) =>
-      task.id === currentTaskId ? { ...task, text: inputValue } : task
-    );
-    setTasks(updatedTasks);
-    setInputValue(''); // 입력란 초기화
+    updateSubTaskTitle(task.id, currentSubTaskId, inputValue); // TaskContext의 updateSubTaskTitle 호출
+    setInputValue(''); // 입력 값 초기화
     setIsEditing(false); // 편집 모드 종료
     setOpen(false); // 모달 닫기
-  }
-
-  const deleteTask = (id) => {
-    setTasks(tasks.filter(task => task.id !== id)); // 해당 ID를 가진 작업 삭제
   };
 
   return (
     <>
-      <div className=" w-96 h-96 m-4 p-2 bg-white shadow-md rounded-lg hover:shadow-gray-400 overflow-y-auto">
+      <div {...dragHandleProps} className="w-96 h-96 m-4 p-2 bg-white shadow-md rounded-lg hover:shadow-gray-400 overflow-y-auto">
         <h3 className="text-lg font-semibold">{task.text}</h3>
-        <button className="w-40 h-8 mt-2 ml-2 text-blue-600 rounded-full flex items-center" onClick={() => setOpen(true)}>
+
+        <Button className="w-40 h-8 mt-2 ml-2 text-blue-600 rounded-full flex items-center" onClick={() => setOpen(true)}>
           <BsPlusCircleDotted />
           <p className="ml-2">할 일 추가</p>
-        </button>
+        </Button>
+
         <div className="lists">
-          {tasks.map((task, index) => (
-            <div key={task.id} className="flex mt-3 hover:rounded-lg hover:bg-gray-100"
-              onMouseEnter={() => handleMouseEnter(index)}
-              onMouseLeave={() => handleMouseLeave(index)}
-            >
-              <input type="checkbox" className="ml-2 mr-2" checked={task.isChecked} onChange={() => handleCheckbox(index)} />
-              <p className="w-10/12">{task.text}</p>
-              {task.showButtons && ( // 버튼이 보일 조건
-                <>
-                  <button className="ml-2 mr-2"
-                    onClick={() => {
-                      setCurrentTaskId(task.id);
-                      setInputValue(task.text); // 입력값 설정
-                      setIsEditing(true); // 편집 모드 활성화
-                      setOpen(true); // 모달 열기
-                    }}>
-                    <MdOutlineModeEdit />
-                  </button>
-                  <button onClick={() => deleteTask(task.id)}><RiDeleteBin5Line /></button>
-                </>
-              )}
+          {task.subTasks?.map((subTask) => (
+            <div key={subTask.id} className="flex mt-3 hover:rounded-lg hover:bg-gray-100">
+              <input 
+                type="checkbox" 
+                className="ml-2 mr-2" 
+                checked={subTask.isChecked} 
+                onChange={() => updateSubTaskCheck(task.id, subTask.id, !subTask.isChecked)} // 체크 상태 업데이트
+              />
+              <p className="w-10/12">{subTask.text}</p>
+
+              <Button 
+                className="ml-2 mr-2" 
+                onClick={() => {
+                  setCurrentSubTaskId(subTask.id); // 현재 서브 태스크 ID 설정
+                  setInputValue(subTask.text); // 입력 필드 값 설정
+                  setIsEditing(true); // 편집 모드 활성화
+                  setOpen(true); // 모달 열기
+                }}>
+                <MdOutlineModeEdit />
+              </Button>
+
+              <Button onClick={() => deleteSubTask(task.id, subTask.id)}><RiDeleteBin5Line /></Button>
             </div>
           ))}
         </div>
       </div>
 
+      {/* 서브 태스크 추가 및 수정 모달 */}
       <Modal isOpen={open} onClose={() => setOpen(false)}>
         <div>
-          <p className="font-semibold text-lg text-center mb-4">{isEditing ? '할 일 수정하기' : '할 일 추가하기'}</p>
-          <input
+          <p className="font-semibold text-lg text-center mb-4">
+            {isEditing ? '서브 태스크 수정하기' : '서브 태스크 추가하기'}
+          </p>
+          
+          <InputField
             className="border-2 mb-2"
             type="text"
-            placeholder="할 일을 입력하세요."
+            placeholder="서브 태스크 입력"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                isEditing ? updateTask() : getInputValue();
+                isEditing ? handleUpdateSubTaskTitle() : handleAddSubTask();
               }
             }}
           />
+          
           <div className="flex justify-around text-center">
-            <button className="hover:font-semibold" onClick={() => setOpen(false)}>취소</button>
-            <button className="hover:font-semibold hover:text-blue-600" onClick={() => {
-              if (isEditing) {
-                updateTask(); // 작업 업데이트 로직
-              } else {
-                getInputValue(); // 새 작업 추가
-              }
+            <Button className="hover:font-semibold" onClick={() => setOpen(false)}>취소</Button>
+            <Button className="hover:font-semibold hover:text-blue-600" onClick={() => {
+              isEditing ? handleUpdateSubTaskTitle() : handleAddSubTask();
               setOpen(false);
             }}>
               완료
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>
     </>
   );
 }
-
 
 export default TaskCard;

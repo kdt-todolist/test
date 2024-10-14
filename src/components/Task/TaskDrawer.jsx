@@ -1,130 +1,112 @@
 import { BsPlusCircleDotted } from "react-icons/bs";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { useState } from "react";
-import Modal from '../Common/Modal';
-import TaskCard from "./TaskCard";
+import { useState, useContext } from "react";
+import Modal from "../Common/Modal";
+import InputField from "../Common/InputField";
+import Button from "../Common/Button";
+import { TaskContext } from '../../contexts/TaskContext'; // TaskContext 가져오기
 
 function TaskDrawer() {
+  const { tasks, addTask, updateTaskTitle, updateTaskCheck, deleteTask } = useContext(TaskContext); // TaskContext 사용
   const [open, setOpen] = useState(false);
-  const [tasks, setTasks] = useState([]);
-  const [inputValue, setInputValue] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentTaskId, setCurrentTaskId] = useState(null);
-  const [isChecked, setIsChecked] = useState(false);
- 
-  const getInputValue = () => {
+  const [inputValue, setInputValue] = useState(''); // 입력 값 상태
+  const [isEditing, setIsEditing] = useState(false); // 편집 모드
+  const [currentTaskId, setCurrentTaskId] = useState(null); // 현재 편집 중인 Task ID 저장
+
+  // Task 추가 처리 함수
+  const handleAddTask = () => {
     if (inputValue.trim() === '') return; // 빈 입력 방지
-  
-    const newTask = { id: Date.now(), text: inputValue, isChecked: true}; // 고유 ID 추가
-    setTasks([...tasks, newTask]); // 새 작업 추가
-    setInputValue(''); // 입력란 초기화
+
+    const newTask = { id: Date.now(), text: inputValue, isChecked: false, subTasks: [] }; // 새로운 Task 객체
+    addTask(newTask); // Task 추가
+    setInputValue(''); // 입력 필드 초기화
     setOpen(false); // 모달 닫기
   };
 
-  const handleMouseEnter = (index) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].showButtons = true; // 버튼 보이기
-    setTasks(updatedTasks);
-  };
-
-  const handleMouseLeave = (index) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].showButtons = false; // 버튼 숨기기
-    setTasks(updatedTasks);
-  };
-
-  const handleCheckbox = (index) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].isChecked = !updatedTasks[index].isChecked; // 체크 상태 반전
-    setTasks(updatedTasks); // 상태 업데이트
-  };
-  
-
-  const updateTask = () => {
-    // 작업 업데이트 로직
+  // Task 제목 수정 처리 함수
+  const handleUpdateTaskTitle = () => {
     if (inputValue.trim() === '') return; // 빈 입력 방지
-    const updatedTasks = tasks.map((task) =>
-      task.id === currentTaskId ? { ...task, text: inputValue } : task
-    );
-    setTasks(updatedTasks);
-    setInputValue(''); // 입력란 초기화
-    setIsEditing(false); // 편집 모드 종료
-    setOpen(false); // 모달 닫기
-  }
 
-  const deleteTask = (id) => {
-    setTasks(tasks.filter(task => task.id !== id)); // 해당 ID를 가진 작업 삭제
+    updateTaskTitle(currentTaskId, inputValue); // Task 제목 업데이트
+    setInputValue(''); // 입력 필드 초기화
+    setIsEditing(false); // 편집 모드 해제
+    setOpen(false); // 모달 닫기
   };
 
   return (
     <>
       <div className="shadow-lg border-2 rounded-lg bg-gray-100">
-        <p className="text-center text-lg font-semibold mt-2">목록</p>
-        <button className="w-full h-8 mt-2 p-2 flex items-center hover:text-blue-600 hover:rounded-lg hover:bg-gray-200" onClick={() => setOpen(true)}>
+        <button
+          className="w-full h-8 mt-2 p-2 flex items-center hover:text-blue-600 hover:rounded-lg hover:bg-gray-200"
+          onClick={() => setOpen(true)} // 모달 열기
+        >
           <BsPlusCircleDotted />
           <p className="ml-2">새 목록 만들기</p>
         </button>
+
         <div className="lists w-64">
-          {tasks.map((task, index) => (
-            <div key={task.id} className="h-8 mt-3 flex items-center hover:rounded-lg hover:bg-gray-200"
-              onMouseEnter={() => handleMouseEnter(index)}
-              onMouseLeave={() => handleMouseLeave(index)}
+          {tasks.map((task) => (
+            <div
+              key={task.id}
+              className="h-8 mt-3 flex items-center hover:rounded-lg hover:bg-gray-200"
             >
-              <input type="checkbox" className="ml-2 mr-2" checked={task.isChecked} onChange={()=>handleCheckbox(index)} />
-              <p className="w-10/12">{ (task.text.length > 10)? task.text.slice(0,10)+'...' : task.text}</p>
-              {task.showButtons && ( // 버튼이 보일 조건
-                <>
-                  <button className="ml-2 mr-2"
-                    onClick={() => {
-                      setCurrentTaskId(task.id);
-                      setInputValue(task.text); // 입력값 설정
-                      setIsEditing(true); // 편집 모드 활성화
-                      setOpen(true); // 모달 열기
-                    }}>
-                    <MdOutlineModeEdit />
-                  </button>
-                  <button onClick={() => deleteTask(task.id)}><RiDeleteBin5Line /></button>
-                </>
-              )}
+              <input
+                type="checkbox"
+                className="ml-2 mr-2"
+                checked={task.isChecked} // 체크 상태 유지
+                onChange={() => updateTaskCheck(task.id, !task.isChecked)} // 체크 상태 변경
+              />
+              <p className="w-10/12">
+                {task.text.length > 10 ? task.text.slice(0, 10) + '...' : task.text} {/* 제목 표시 */}
+              </p>
+              <button
+                className="ml-2 mr-2"
+                onClick={() => {
+                  setCurrentTaskId(task.id); // 현재 Task ID 설정
+                  setInputValue(task.text); // 입력 필드 값 설정
+                  setIsEditing(true); // 편집 모드 활성화
+                  setOpen(true); // 모달 열기
+                }}
+              >
+                <MdOutlineModeEdit />
+              </button>
+              <button onClick={() => deleteTask(task.id)}> {/* Task 삭제 */}
+                <RiDeleteBin5Line />
+              </button>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex"> 
-        {tasks.map((task) => ( // 목록 추가될 때마다 taskCard 추가하기
-          <TaskCard key={task.id} task={task} />
-        ))}
-      </div>
-
+      {/* Task 추가/수정 모달 */}
       <Modal isOpen={open} onClose={() => setOpen(false)}>
         <div>
-          <p className="font-semibold text-lg text-center mb-4">{isEditing ? '목록 수정하기' : '새 목록 만들기'}</p>
-          <input
+          <p className="font-semibold text-lg text-center mb-4">
+            {isEditing ? '목록 수정하기' : '새 목록 만들기'}
+          </p>
+          <InputField
             className="border-2 mb-2"
             type="text"
             placeholder="목록 이름 입력"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            value={inputValue} // 입력 필드 값
+            onChange={(e) => setInputValue(e.target.value)} // 입력 필드 변경 처리
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                isEditing ? updateTask() : getInputValue();
+                isEditing ? handleUpdateTaskTitle() : handleAddTask(); // 엔터 키로 Task 추가/수정
               }
             }}
           />
           <div className="flex justify-around text-center">
-            <button className="hover:font-semibold" onClick={() => setOpen(false)}>취소</button>
-            <button className="hover:font-semibold hover:text-blue-600" onClick={() => {
-              if (isEditing) {
-                updateTask(); // 작업 업데이트 로직
-              } else {
-                getInputValue(); // 새 작업 추가
-              }
-              setOpen(false);
-            }}>
+            <Button color="red" onClick={() => setOpen(false)}>취소</Button> {/* 모달 닫기 */}
+            <Button
+              color="green"
+              onClick={() => {
+                isEditing ? handleUpdateTaskTitle() : handleAddTask(); // Task 추가 또는 수정
+              }}
+            >
               완료
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>
