@@ -1,3 +1,6 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
+
 import styled from "styled-components";
 import Button from "./Button";
 
@@ -41,7 +44,7 @@ function Modal({ children, isOpen, onClose, width, height }) {
         <div className="flex justify-between w-full p-4">
           <p className="text-xl font-semibold">Modal</p>
           <CloseButton size="sm" color="red" onClick={onClose}>
-            &#x2715; {/* Unicode X mark for the close button */}
+            <FontAwesomeIcon icon={faXmark} />
           </CloseButton>
         </div>
         <div className="text-black text-center">
