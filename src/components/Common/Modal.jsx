@@ -20,7 +20,7 @@ const StyledBackdrop = styled.div`
   z-index: 999;
   display: flex;
   place-items: center;
-  aligin-items: center;
+  align-items: center;
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.3);
 `;
