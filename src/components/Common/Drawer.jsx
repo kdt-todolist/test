@@ -39,7 +39,8 @@ function Drawer({ children }) {
 
   return (
     <StyledDrawer width={drawerWidth}>
-      <Button size="sm" color="transparent" onClick={toggleDrawer}>
+      <Button size="lg" color="transparent"
+      onClick={toggleDrawer}>
         <FontAwesomeIcon icon={faBars} />
       </Button>
       {open && children}
