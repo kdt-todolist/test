@@ -1,7 +1,7 @@
 import styled, { css } from "styled-components";
 
 // 버튼 기본
-const CustomButton = styled.button
+const StyledButton = styled.button
 `
   ${(p) => p.sizeStyle}
   ${(p) => p.borderStyle}
@@ -82,7 +82,7 @@ function Button(props) {
   const borderStyle = BORDER[border];
 
   return (
-    <StyledButton 
+    <StyledButton  
       sizeStyle={sizeStyle}
       colorStyle={colorStyle}
       borderStyle={borderStyle}
