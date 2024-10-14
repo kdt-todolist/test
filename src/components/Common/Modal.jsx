@@ -27,7 +27,7 @@ const StyledBackdrop = styled.div`
 
 function Modal(props) {
 
-  const { open, active, width, height } = props;
+  const { children, open, active, width, height } = props;
 
   return (
     <>
@@ -38,6 +38,7 @@ function Modal(props) {
             <p className="text-xl font-semibold">Modal</p>
             <Button size="sm" color="red" onClick={active}>X</Button>
           </div>
+          {children}
         </StyledModal>
       </StyledBackdrop>
     : null}

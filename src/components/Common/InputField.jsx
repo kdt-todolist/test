@@ -42,7 +42,7 @@ const SIZES = {
 };
 
 function InputField(props) {
-  const { size, border, placeholder } = props;
+  const { children, size, border, placeholder } = props;
 
   const sizestyle = SIZES[size];
   const borderstyle = BORDER[border];
@@ -52,7 +52,9 @@ function InputField(props) {
       sizestyle={sizestyle}
       borderstyle={borderstyle}
       placeholder={placeholder}
-    />
+    >
+      {children}
+    </StyledInput>
   );
 }
 

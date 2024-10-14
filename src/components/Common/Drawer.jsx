@@ -1,5 +1,6 @@
 import styled, { css } from "styled-components";
 import Button from "./Button";
+import { Children } from "react";
 
 const StyledDrawer = styled.div`
   width: ${(p) => p.width}px;
@@ -14,7 +15,7 @@ const StyledDrawer = styled.div`
 `;
 
 function Drawer(props) {
-  const { open, active } = props;
+  const { children, open, active } = props;
 
   let width;
 
@@ -25,13 +26,7 @@ function Drawer(props) {
       <div className="py-3 flex justify-end">
         <Button size="sm" color="indigo" onClick={active}>Open & Close</Button>
       </div>
-      <div className="mt-4 flex flex-col gap-4 relative">
-        <ul className="mt-4 flex flex-col gap-4 relative">
-          <li></li>
-          <li></li>
-          <li></li>
-        </ul>
-      </div>
+      {children}
     </StyledDrawer>
   );
 }
