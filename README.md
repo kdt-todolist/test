@@ -41,18 +41,17 @@
   │     │      ├── api.js
   │     ├── /components        # 재사용 가능한 UI 컴포넌트들이 위치한 폴더
   │     │      ├── /Auth       # 로그인과 회원가입 관련 컴포넌트들이 위치한 폴더
-  │     │      │     ├── LoginModal.jsx
-  │     │      │     ├── SignupModal.jsx
-  │     │      │     └── Header.jsx
+  │     │      │     └── LoginForm.jsx
   │     │      ├── /Common     # 공통적으로 사용되는 컴포넌트들이 위치한 폴더 (버튼, 모달, 입력 필드 등).
   │     │      │     ├── Button.jsx
+  │     │      │     ├── InputCheck.jsx
   │     │      │     ├── InputField.jsx
-  │     │      │     └── LoadingSpinner.jsx
+  │     │      │     ├── Modal.jsx
+  │     │      │     └── Drawer.jsx
   │     │      ├── /Task      # 할 일 관리와 관련된 컴포넌트들이 위치한 폴더
   │     │      │     ├── TaskCard.jsx
   │     │      │     ├── TaskDashboard.jsx
-  │     │      │     ├── TaskDrawer.jsx
-  │     │      │     └── SubTask.jsx
+  │     │      │     └── TaskDrawer.jsx
   │     ├── /contexts        # 전역 상태 관리를 위한 컨텍스트가 위치한 폴더
   │     │     ├── TaskContext.js
   │     ├── /pages           # 각 페이지 컴포넌트들이 위치한 폴더
@@ -74,9 +73,10 @@
     - `LoginForm.jsx`: 로그인 폼 컴포넌트.
   - `Common`
     - `Button.jsx`: 버튼 컴포넌트.
+    - `InputCheck.jsx`: 공통 입력 체크 컴포넌트.
     - `InputField.jsx`: 공통 입력 필드 컴포넌트.
-    - `Modal.jsx`: 모달 컴포넌트.
-    - `Header.jsx`: 로그인 상태에 따라 다른 UI를 보여주는 헤더 컴포넌트.
+    - `Modal.jsx`: 공통 모달 컴포넌트.
+    - `Drawer.jsx`: 공통 드로어(서랍) 컴포넌트.
   - `Task`
     - `TaskCard.jsx`: 새로운 SubTask를 추가하거나 SubTask 목록을 표시하는 개별 Task 카드 컴포넌트.
     - `TaskDrawer.jsx`: 새로운 Task를 추가하거나 Task 목록을 표시하는 드로어 컴포넌트.
