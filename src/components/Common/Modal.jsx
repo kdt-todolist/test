@@ -10,7 +10,12 @@ const StyledModal = styled.div`
   height: ${(props) => props.height || 300}px; /* 기본 높이 추가 */
   border-radius: 10px;
   background-color: #FFFFFF;
+  
+  display: flex;
   position: relative; /* 닫기 버튼 위치를 위한 상대 위치 설정 */
+  flex-direction: column;
+  align-items: center;
+  justify-content: top;
   padding: 20px;
 `;
 
@@ -29,28 +34,35 @@ const StyledBackdrop = styled.div`
   background-color: rgba(0, 0, 0, 0.3);
 `;
 
-const CloseButton = styled(Button)`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-`;
-
 function Modal({ children, isOpen, onClose, width, height }) {
   if (!isOpen) return null;
 
   return (
     <StyledBackdrop onClick={onClose}>
+      
       <StyledModal width={width} height={height} onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between w-full p-4">
-          <p className="text-xl font-semibold">Modal</p>
-          <CloseButton size="sm" color="red" onClick={onClose}>
-            <FontAwesomeIcon icon={faXmark} />
-          </CloseButton>
+        <div style={{
+          position: 'absolute',
+          top: '10px',
+          right: '10px',
+        }}>
+          <Button size="lg" color="x" onClick={onClose}>
+            <FontAwesomeIcon icon={faXmark} size="lg" />
+          </Button>
         </div>
-        <div className="text-black text-center">
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%',
+          color: '#000000',
+        }}>
           {children}
         </div>
       </StyledModal>
+
     </StyledBackdrop>
   );
 }

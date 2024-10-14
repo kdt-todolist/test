@@ -61,6 +61,13 @@ const COLOR = {
     --button-box-shadow: none;
     --button-color: white;
   `,
+  x: css`
+    --button-bg-color: transparent;
+    --button-hover-bg-color: transparent;
+    --button-color: rgb(239 68 68);
+    --button-hover-color: rgb(185 28 28);
+    --button-box-shadow: none;
+  `,
 };
 // 버튼 사이즈
 const SIZES = {
