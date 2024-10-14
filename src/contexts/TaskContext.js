@@ -3,7 +3,38 @@ import React, { createContext, useState } from 'react';
 export const TaskContext = createContext(null);
 
 export const TaskProvider = ({ children }) => {
-  const [tasks, setTasks] = useState([]);
+  // 초기 더미 데이터
+  const initialTasks = [
+    {
+      id: 1,
+      text: "Shopping",
+      isChecked: false,
+      subTasks: [
+        { id: 101, text: "Buy milk", isChecked: false },
+        { id: 102, text: "Buy eggs", isChecked: true },
+      ],
+    },
+    {
+      id: 2,
+      text: "Work",
+      isChecked: false,
+      subTasks: [
+        { id: 201, text: "Finish report", isChecked: true },
+        { id: 202, text: "Send email to client", isChecked: false },
+      ],
+    },
+    {
+      id: 3,
+      text: "Workout",
+      isChecked: true,
+      subTasks: [
+        { id: 301, text: "Morning run", isChecked: true },
+        { id: 302, text: "Evening yoga", isChecked: false },
+      ],
+    }
+  ];
+
+  const [tasks, setTasks] = useState(initialTasks);
 
   // Task 추가
   const addTask = (newTask) => {
@@ -94,6 +125,20 @@ export const TaskProvider = ({ children }) => {
     );
   };
 
+  // SubTask 순서 변경
+  const updateSubTaskOrder = (taskId, reorderedSubTasks) => {
+    setTasks(
+      tasks.map(task =>
+        task.id === taskId
+          ? {
+              ...task,
+              subTasks: reorderedSubTasks,  // 새로운 순서로 SubTasks 업데이트
+            }
+          : task
+      )
+    );
+  };
+
   // Task 순서 변경
   const updateTaskOrder = (reorderedTasks) => {
     setTasks(reorderedTasks);
@@ -103,6 +148,7 @@ export const TaskProvider = ({ children }) => {
     <TaskContext.Provider
       value={{
         tasks,
+        setTasks,
         addTask,
         updateTaskTitle,
         updateTaskCheck,
@@ -111,7 +157,8 @@ export const TaskProvider = ({ children }) => {
         updateSubTaskTitle,
         updateSubTaskCheck,
         deleteSubTask,
-        updateTaskOrder
+        updateTaskOrder,
+        updateSubTaskOrder  // SubTask 순서 변경 함수 제공
       }}
     >
       {children}
