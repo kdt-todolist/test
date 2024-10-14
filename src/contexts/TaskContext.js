@@ -8,7 +8,7 @@ export const TaskProvider = ({ children }) => {
     {
       id: 1,
       text: "Shopping",
-      isChecked: false,
+      isChecked: true,
       subTasks: [
         { id: 101, text: "Buy milk", isChecked: false },
         { id: 102, text: "Buy eggs", isChecked: true },
@@ -17,7 +17,7 @@ export const TaskProvider = ({ children }) => {
     {
       id: 2,
       text: "Work",
-      isChecked: false,
+      isChecked: true,
       subTasks: [
         { id: 201, text: "Finish report", isChecked: true },
         { id: 202, text: "Send email to client", isChecked: false },
@@ -36,9 +36,10 @@ export const TaskProvider = ({ children }) => {
 
   const [tasks, setTasks] = useState(initialTasks);
 
-  // Task 추가
+  // Task 추가 (기본적으로 체크된 상태로 추가)
   const addTask = (newTask) => {
-    setTasks((prevTasks) => [...prevTasks, newTask]);
+    const taskWithChecked = { ...newTask, isChecked: true }; // 기본적으로 체크된 상태로 추가
+    setTasks((prevTasks) => [...prevTasks, taskWithChecked]);
   };
 
   // Task 제목 수정
