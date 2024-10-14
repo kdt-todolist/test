@@ -83,10 +83,16 @@ function Button(props) {
   const borderstyle = BORDER[border];
 
   return (
+
     <StyledButton 
       sizestyle={sizestyle}
       colorstyle={colorstyle}
       borderstyle={borderstyle}
+
+    <StyledButton  
+      sizeStyle={sizeStyle}
+      colorStyle={colorStyle}
+      borderStyle={borderStyle}
       onClick={onClick}
     >
       {children}
