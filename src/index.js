@@ -2,12 +2,14 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import TaskDrawer from './components/Task/TaskDrawer'
+import TaskCard from './components/Task/TaskCard';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <TaskDrawer />
   </React.StrictMode>
 );
 
