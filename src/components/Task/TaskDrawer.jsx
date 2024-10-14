@@ -2,10 +2,13 @@ import { BsPlusCircleDotted } from "react-icons/bs";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { useState, useContext } from "react";
-import Modal from "../Common/Modal";
-import InputField from "../Common/InputField";
-import Button from "../Common/Button";
 import { TaskContext } from '../../contexts/TaskContext'; // TaskContext 가져오기
+
+import Modal from "../Common/Modal";
+import Button from "../Common/Button";
+import InputCheck from "../Common/InputCheck";
+import InputField from "../Common/InputField";
+
 
 function TaskDrawer() {
   const { tasks, addTask, updateTaskTitle, updateTaskCheck, deleteTask } = useContext(TaskContext); // TaskContext 사용
@@ -51,17 +54,14 @@ function TaskDrawer() {
               key={task.id}
               className="h-8 mt-3 flex items-center hover:rounded-lg hover:bg-gray-200"
             >
-              <input
-                type="checkbox"
-                className="ml-2 mr-2"
+              <InputCheck
                 checked={task.isChecked} // 체크 상태 유지
                 onChange={() => updateTaskCheck(task.id, !task.isChecked)} // 체크 상태 변경
               />
               <p className="w-10/12">
                 {task.text.length > 10 ? task.text.slice(0, 10) + '...' : task.text} {/* 제목 표시 */}
               </p>
-              <button
-                className="ml-2 mr-2"
+              <Button
                 onClick={() => {
                   setCurrentTaskId(task.id); // 현재 Task ID 설정
                   setInputValue(task.text); // 입력 필드 값 설정
@@ -70,10 +70,10 @@ function TaskDrawer() {
                 }}
               >
                 <MdOutlineModeEdit />
-              </button>
-              <button onClick={() => deleteTask(task.id)}> {/* Task 삭제 */}
+              </Button>
+              <Button onClick={() => deleteTask(task.id)}> {/* Task 삭제 */}
                 <RiDeleteBin5Line />
-              </button>
+              </Button>
             </div>
           ))}
         </div>
@@ -86,8 +86,6 @@ function TaskDrawer() {
             {isEditing ? '목록 수정하기' : '새 목록 만들기'}
           </p>
           <InputField
-            className="border-2 mb-2"
-            type="text"
             placeholder="목록 이름 입력"
             value={inputValue} // 입력 필드 값
             onChange={(e) => setInputValue(e.target.value)} // 입력 필드 변경 처리

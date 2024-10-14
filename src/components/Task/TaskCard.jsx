@@ -4,6 +4,7 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { useState, useContext } from "react";
 import { TaskContext } from "../../contexts/TaskContext"; // TaskContext 가져오기
 import Button from "../Common/Button";
+import InputCheck from "../Common/InputCheck";
 import InputField from "../Common/InputField";
 import Modal from '../Common/Modal';
 
@@ -47,9 +48,8 @@ function TaskCard({ task, dragHandleProps }) {
         <div className="lists">
           {task.subTasks?.map((subTask) => (
             <div key={subTask.id} className="flex mt-3 hover:rounded-lg hover:bg-gray-100">
-              <input 
-                type="checkbox" 
-                className="ml-2 mr-2" 
+              <InputCheck
+                shape="round"
                 checked={subTask.isChecked} 
                 onChange={() => updateSubTaskCheck(task.id, subTask.id, !subTask.isChecked)} // 체크 상태 업데이트
               />
@@ -80,8 +80,6 @@ function TaskCard({ task, dragHandleProps }) {
           </p>
           
           <InputField
-            className="border-2 mb-2"
-            type="text"
             placeholder="서브 태스크 입력"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
