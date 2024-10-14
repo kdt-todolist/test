@@ -91,8 +91,8 @@ function TaskCard({ task, dragHandleProps }) {
           />
           
           <div className="flex justify-around text-center">
-            <Button className="hover:font-semibold" onClick={() => setOpen(false)}>취소</Button>
-            <Button className="hover:font-semibold hover:text-blue-600" onClick={() => {
+            <Button color="green"
+              onClick={() => {
               isEditing ? handleUpdateSubTaskTitle() : handleAddSubTask();
               setOpen(false);
             }}>

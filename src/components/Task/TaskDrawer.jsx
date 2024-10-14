@@ -96,7 +96,6 @@ function TaskDrawer() {
             }}
           />
           <div className="flex justify-around text-center">
-            <Button color="red" onClick={() => setOpen(false)}>취소</Button> {/* 모달 닫기 */}
             <Button
               color="green"
               onClick={() => {
