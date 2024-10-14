@@ -36,7 +36,7 @@ function TaskDrawer() {
 
   return (
     <>
-      <div className="shadow-lg border-2 rounded-lg bg-gray-100">
+      <div>
         <button
           className="w-full h-8 mt-2 p-2 flex items-center hover:text-blue-600 hover:rounded-lg hover:bg-gray-200"
           onClick={() => setOpen(true)} // 모달 열기
