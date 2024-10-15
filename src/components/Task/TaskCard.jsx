@@ -15,6 +15,7 @@ function TaskCard({ task, dragHandleProps }) {
   const [inputValue, setInputValue] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [currentSubTaskId, setCurrentSubTaskId] = useState(null);
+  const [isCompletedVisible, setIsCompletedVisible] = useState(true);
 
   const handleAddSubTask = () => {
     if (inputValue.trim() === '') return;
@@ -44,6 +45,10 @@ function TaskCard({ task, dragHandleProps }) {
     updateSubTaskOrder(task.id, reorderedSubTasks);
   };
 
+  // 완료된 서브 태스크와 미완료 서브 태스크 분리
+  const completedSubTasks = task.subTasks.filter(subTask => subTask.isChecked);
+  const incompleteSubTasks = task.subTasks.filter(subTask => !subTask.isChecked);
+
   return (
     <>
       <div className="w-96 h-96 m-4 p-2 bg-white shadow-md rounded-lg hover:shadow-gray-400 overflow-y-auto">
@@ -61,7 +66,7 @@ function TaskCard({ task, dragHandleProps }) {
           <Droppable droppableId={`subtask-${task.id}`}>
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
-                {task.subTasks?.map((subTask, index) => (
+                {incompleteSubTasks.map((subTask, index) => (
                   <Draggable key={subTask.id} draggableId={subTask.id.toString()} index={index}>
                     {(provided, snapshot) => (
                       <div
@@ -103,6 +108,31 @@ function TaskCard({ task, dragHandleProps }) {
             )}
           </Droppable>
         </DragDropContext>
+
+         {/* 완료된 서브 태스크 섹션 */}
+         {completedSubTasks.length > 0 && (
+          <div className="mt-4">
+            <Button onClick={() => setIsCompletedVisible(!isCompletedVisible)}>
+              {isCompletedVisible ? '▼ 완료됨' : '▲ 완료됨'}
+            </Button>
+            {isCompletedVisible && (
+              <div>
+                {completedSubTasks.map((subTask, index) => (
+                  <div key={subTask.id} className="flex mt-3 hover:rounded-lg hover:bg-gray-100">
+                    <InputCheck
+                      shape="round"
+                      checked={subTask.isChecked}
+                      onChange={() => updateSubTaskCheck(task.id, subTask.id, !subTask.isChecked)}
+                    />
+                    <p className="w-10/12 line-through text-gray-500">{subTask.text}</p>
+
+                    <Button onClick={() => deleteSubTask(task.id, subTask.id)}><RiDeleteBin5Line /></Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Modal for adding or editing subtasks */}
