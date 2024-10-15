@@ -34,7 +34,7 @@ const StyledBackdrop = styled.div`
   background-color: rgba(0, 0, 0, 0.3);
 `;
 
-function Modal({ children, isOpen, onClose, width, height }) {
+function Modal({ children, isOpen, closeBtn, onClose, width, height }) {
   if (!isOpen) return null;
 
   return (
@@ -46,9 +46,9 @@ function Modal({ children, isOpen, onClose, width, height }) {
           top: '10px',
           right: '10px',
         }}>
-          <Button size="lg" color="x" onClick={onClose}>
+          { closeBtn ? <Button size="lg" color="x" onClick={onClose}>
             <FontAwesomeIcon icon={faXmark} size="lg" />
-          </Button>
+          </Button> : null }
         </div>
         <div style={{
           display: 'flex',

@@ -1,5 +1,4 @@
 import styled, { css } from "styled-components";
-
 // 버튼 기본
 const StyledButton = styled.button
 `
@@ -7,7 +6,8 @@ const StyledButton = styled.button
   ${(p) => p.colorstyle}
   ${(p) => p.borderstyle}
 
-  margin: 0;
+  display: flex;
+  align-items: center;
   border: none;
   cursor: pointer;
   font-family: "Noto Sans KR", sans-serif;
@@ -67,6 +67,8 @@ const COLOR = {
     --button-color: rgb(239 68 68);
     --button-hover-color: rgb(185 28 28);
     --button-box-shadow: none;
+    --button-padding: 0px 5px;
+    --button-radius: 999px;
   `,
 };
 // 버튼 사이즈

@@ -106,7 +106,7 @@ function TaskCard({ task, dragHandleProps }) {
       </div>
 
       {/* Modal for adding or editing subtasks */}
-      <Modal isOpen={open} onClose={() => setOpen(false)}>
+      <Modal isOpen={open} onClose={() => setOpen(false)} closeBtn={true}>
         <div>
           <p className="font-semibold text-lg text-center mb-4">
             {isEditing ? '서브 태스크 수정하기' : '서브 태스크 추가하기'}

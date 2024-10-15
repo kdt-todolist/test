@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
-
-import styled from "styled-components";
-import Button from "./Button";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
+import styled from "styled-components";
+import Modal from "./Modal";
+import Button from "./Button";
+import LoginFrom from "../Auth/LoginForm";
 
 const StyledDrawer = styled.div`
   width: ${(p) => p.width}px;
+  height: 100vh;
   color: #FFFFFF;
   font-weight: 600;
-  padding: 0px 12px;
   background-color: rgb(59 130 246);
   transition-duration: 0.5s;
   box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
@@ -17,6 +18,7 @@ const StyledDrawer = styled.div`
 
 function Drawer({ children }) {
   const [open, setOpen] = useState(true);
+  const [login, setLogin] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   // 창 크기에 맞춰 동적으로 너비를 설정
@@ -38,13 +40,36 @@ function Drawer({ children }) {
   };
 
   return (
-    <StyledDrawer width={drawerWidth}>
-      <Button size="lg" color="transparent"
-      onClick={toggleDrawer}>
-        <FontAwesomeIcon icon={faBars} />
-      </Button>
-      {open && children}
-    </StyledDrawer>
+    <>
+      <StyledDrawer width={drawerWidth}>
+        <div className="flex justify-end p-2">
+          <Button 
+            size="md"
+            color="transparent"
+            onClick={() => setLogin(true)}
+          >
+            <FontAwesomeIcon icon={faRightToBracket} />
+          </Button>
+          <Button 
+            size="md"
+            color="transparent"
+            onClick={toggleDrawer}
+          >
+            <FontAwesomeIcon icon={faBars} />
+          </Button>
+        </div>
+        {open && children}
+      </StyledDrawer>
+      <Modal 
+        width={300}
+        height={300}
+        isOpen={login}
+        onClose={() => setLogin(false)}
+      >
+        <LoginFrom />
+      </Modal>
+    </>
+    
   );
 }
 

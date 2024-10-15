@@ -112,7 +112,7 @@ function TaskDrawer() {
       </div>
 
       {/* Task 추가/수정 모달 */}
-      <Modal isOpen={open} onClose={() => setOpen(false)}>
+      <Modal isOpen={open} onClose={() => setOpen(false)} closeBtn={true}>
         <div>
           <p className="font-semibold text-lg text-center mb-4">
             {isEditing ? '목록 수정하기' : '새 목록 만들기'}
