@@ -16,6 +16,9 @@ function TaskCard({ task, dragHandleProps }) {
   const [isEditing, setIsEditing] = useState(false);
   const [currentSubTaskId, setCurrentSubTaskId] = useState(null);
   const [isCompletedVisible, setIsCompletedVisible] = useState(true);
+  const [selectedDaysMap, setSelectedDaysMap] = useState({});
+
+  const days = ["월", "화", "수", "목", "금", "토", "일"];
 
   const handleAddSubTask = () => {
     if (inputValue.trim() === '') return;
@@ -45,6 +48,18 @@ function TaskCard({ task, dragHandleProps }) {
     updateSubTaskOrder(task.id, reorderedSubTasks);
   };
 
+  const toggleDay = (subTaskId, day) => {
+    setSelectedDaysMap((prev) => {
+      const currentDays = prev[subTaskId] || [];
+      if (currentDays.includes(day)) {
+        return { ...prev, [subTaskId]: currentDays.filter(d => d !== day) };
+      } else {
+        return { ...prev, [subTaskId]: [...currentDays, day] };
+      }
+    });
+  };
+
+
   // 완료된 서브 태스크와 미완료 서브 태스크 분리
   const completedSubTasks = task.subTasks.filter(subTask => subTask.isChecked);
   const incompleteSubTasks = task.subTasks.filter(subTask => !subTask.isChecked);
@@ -73,33 +88,49 @@ function TaskCard({ task, dragHandleProps }) {
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
-                        className="flex mt-3 hover:rounded-lg hover:bg-gray-100"
+                        className="mt-3 hover:rounded-lg hover:bg-gray-100"
                         style={{
                           ...provided.draggableProps.style,
                           opacity: snapshot.isDragging ? 0.5 : 1,
                         }}
                       >
-                        <InputCheck
-                          shape="round"
-                          checked={subTask.isChecked}
-                          onChange={() => updateSubTaskCheck(task.id, subTask.id, !subTask.isChecked)}
-                        />
-                        <p className="w-10/12">{subTask.text}</p>
+                        <div className="flex items-center">
+                          <InputCheck
+                            shape="round"
+                            checked={subTask.isChecked}
+                            onChange={() => updateSubTaskCheck(task.id, subTask.id, !subTask.isChecked)}
+                          />
+                          <p className="w-10/12">{subTask.text}</p>
 
-                        <Button
-                          className="ml-2 mr-2"
-                          onClick={() => {
-                            setCurrentSubTaskId(subTask.id);
-                            setInputValue(subTask.text);
-                            setIsEditing(true);
-                            setOpen(true);
-                          }}
-                        >
-                          <MdOutlineModeEdit />
-                        </Button>
+                          <Button
+                            className="ml-2 mr-2"
+                            onClick={() => {
+                              setCurrentSubTaskId(subTask.id);
+                              setInputValue(subTask.text);
+                              setIsEditing(true);
+                              setOpen(true);
+                            }}
+                          >
+                            <MdOutlineModeEdit />
+                          </Button>
 
-                        <Button onClick={() => deleteSubTask(task.id, subTask.id)}><RiDeleteBin5Line /></Button>
+                          <Button onClick={() => deleteSubTask(task.id, subTask.id)}><RiDeleteBin5Line /></Button>
+                        </div>
+                        
+                        {/* 요일 선택 추가 */}
+                        <div className="flex mt-2 justify-center">
+                          {days.map((day) => (
+                            <button
+                              key={day}
+                              className={`mr-1 p-2 rounded-full ${selectedDaysMap[subTask.id]?.includes(day) ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                              onClick={() => toggleDay(subTask.id, day)}
+                            >
+                              {day}
+                            </button>
+                          ))}
+                        </div>
                       </div>
+
                     )}
                   </Draggable>
                 ))}
@@ -109,8 +140,8 @@ function TaskCard({ task, dragHandleProps }) {
           </Droppable>
         </DragDropContext>
 
-         {/* 완료된 서브 태스크 섹션 */}
-         {completedSubTasks.length > 0 && (
+        {/* 완료된 서브 태스크 섹션 */}
+        {completedSubTasks.length > 0 && (
           <div className="mt-4">
             <Button onClick={() => setIsCompletedVisible(!isCompletedVisible)}>
               {isCompletedVisible ? '▼ 완료됨' : '▲ 완료됨'}
