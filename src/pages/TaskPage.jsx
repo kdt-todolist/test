@@ -5,7 +5,7 @@ import TaskDashboard from '../components/Task/TaskDashboard';
 
 const TaskPage = () => {
   return (
-    <div style={{ display: 'flex' }}>
+    <div className="flex min-w-full">
       <Drawer>
         <TaskDrawer /> {/* TaskDrawer가 Drawer의 너비에 맞춰짐 */}
       </Drawer>

@@ -21,12 +21,12 @@ const TaskDashboard = () => {
   };
 
   return (
-    <div className="flex-1 p-6">
+    <div className="flex-auto p-5 overflow-x-scroll">
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="droppable-tasks" direction="vertical">
           {(provided) => (
             <div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
               {...provided.droppableProps}
               ref={provided.innerRef}
               style={{ minHeight: '100px' }}

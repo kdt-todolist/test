@@ -1,6 +1,11 @@
-import { BsPlusCircleDotted } from "react-icons/bs";
-import { MdOutlineModeEdit } from "react-icons/md";
+import { FaTrashAlt } from "react-icons/fa";
+import { FaPencilAlt } from "react-icons/fa";
+import { FaPlusCircle } from "react-icons/fa";
+import { MdEventRepeat } from "react-icons/md";
 import { RiDeleteBin5Line } from "react-icons/ri";
+import { FaArrowUp } from "react-icons/fa";
+import { FaArrowDown } from "react-icons/fa";
+
 import { useState, useContext } from "react";
 import { TaskContext } from "../../contexts/TaskContext";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -16,8 +21,8 @@ function TaskCard({ task, dragHandleProps }) {
   const [isEditing, setIsEditing] = useState(false);
   const [currentSubTaskId, setCurrentSubTaskId] = useState(null);
   const [isCompletedVisible, setIsCompletedVisible] = useState(true);
+  const [showRoutine, setShowRoutine] = useState(false);
   const [selectedDaysMap, setSelectedDaysMap] = useState({});
-
   const days = ["월", "화", "수", "목", "금", "토", "일"];
 
   const handleAddSubTask = () => {
@@ -59,6 +64,10 @@ function TaskCard({ task, dragHandleProps }) {
     });
   };
 
+  const handleRoutineBox = () => {
+    setShowRoutine(!showRoutine);
+  }
+
 
   // 완료된 서브 태스크와 미완료 서브 태스크 분리
   const completedSubTasks = task.subTasks.filter(subTask => subTask.isChecked);
@@ -66,16 +75,20 @@ function TaskCard({ task, dragHandleProps }) {
 
   return (
     <>
-      <div className="w-96 h-96 m-4 p-2 bg-white shadow-md rounded-lg hover:shadow-gray-400 overflow-y-auto">
+      <div 
+        style={{boxShadow: 'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px'}}
+        className="p-3 bg-white rounded-lg overflow-y-auto">
+        
         {/* Only this part (header) will be draggable for task order */}
-        <div {...dragHandleProps} className="flex justify-between items-center cursor-pointer p-2 rounded-t-lg">
-          <h3 className="text-lg font-semibold">{task.text}</h3>
+        <div {...dragHandleProps} className="flex justify-between items-center p-3">
+          <p className="text-2xl font-bold indent-1">{task.text}</p>
+          <button
+            className="rounded-full p-1 text-white bg-blue-500 hover:bg-blue-600"
+            onClick={() => setOpen(true)}
+          >
+            <FaPlusCircle style={{ width: '24px', height: '24px' }}/>
+          </button>
         </div>
-
-        <Button className="w-40 h-8 mt-2 ml-2 text-blue-600 rounded-full flex items-center" onClick={() => setOpen(true)}>
-          <BsPlusCircleDotted />
-          <p className="ml-2">할 일 추가</p>
-        </Button>
 
         <DragDropContext onDragEnd={handleSubTaskDragEnd}>
           <Droppable droppableId={`subtask-${task.id}`}>
@@ -88,47 +101,64 @@ function TaskCard({ task, dragHandleProps }) {
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
-                        className="mt-3 hover:rounded-lg hover:bg-gray-100"
+                        className="my-3 rounded-lg hover:bg-gray-100"
                         style={{
                           ...provided.draggableProps.style,
                           opacity: snapshot.isDragging ? 0.5 : 1,
                         }}
                       >
-                        <div className="flex items-center">
-                          <InputCheck
-                            shape="round"
-                            checked={subTask.isChecked}
-                            onChange={() => updateSubTaskCheck(task.id, subTask.id, !subTask.isChecked)}
-                          />
-                          <p className="w-10/12">{subTask.text}</p>
-
-                          <Button
-                            className="ml-2 mr-2"
-                            onClick={() => {
-                              setCurrentSubTaskId(subTask.id);
-                              setInputValue(subTask.text);
-                              setIsEditing(true);
-                              setOpen(true);
-                            }}
-                          >
-                            <MdOutlineModeEdit />
-                          </Button>
-
-                          <Button onClick={() => deleteSubTask(task.id, subTask.id)}><RiDeleteBin5Line /></Button>
-                        </div>
-                        
-                        {/* 요일 선택 추가 */}
-                        <div className="flex mt-2 justify-center">
-                          {days.map((day) => (
-                            <button
-                              key={day}
-                              className={`mr-1 p-2 rounded-full ${selectedDaysMap[subTask.id]?.includes(day) ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                              onClick={() => toggleDay(subTask.id, day)}
+                        <div className="flex justify-between p-2">
+                          <div className="flex items-center gap-1">
+                            <InputCheck
+                              shape="round"
+                              checked={subTask.isChecked}
+                              onChange={() => updateSubTaskCheck(task.id, subTask.id, !subTask.isChecked)}
+                            />
+                            <p className="text-base font-semibold">{subTask.text}</p>
+                          </div>
+                          <div className="flex">
+                            <Button
+                              size="sm"
+                              color="transparent"
+                              onClick={() => {
+                                setCurrentSubTaskId(subTask.id);
+                                setInputValue(subTask.text);
+                                setIsEditing(true);
+                                setOpen(true);
+                              }}
                             >
-                              {day}
-                            </button>
-                          ))}
+                              <FaPencilAlt style={{ color: '#000000', width: '16px', height: '16px' }}/>
+                            </Button>
+                            <Button 
+                              size="sm"
+                              color="transparent"
+                              onClick={() => deleteSubTask(task.id, subTask.id)}
+                            >
+                              <FaTrashAlt style={{ color: '#000000', width: '16px', height: '16px' }}/>
+                            </Button>
+                            <Button 
+                              size="sm"
+                              color="transparent"
+                              onClick={() => handleRoutineBox()}
+                            >
+                              <MdEventRepeat style={{ color: '#000000', width: '18px', height: '18px' }}/>
+                            </Button>
+                          </div>
                         </div>
+                        {/* 날짜 선택 박스 */}
+                        { showRoutine ? 
+                          <div className="flex justify-end gap-2 p-2">
+                            {days.map((day) => (
+                              <button
+                                key={day}
+                                className={`font-bold p-2 rounded-lg ${selectedDaysMap[subTask.id]?.includes(day) ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                                onClick={() => toggleDay(subTask.id, day)}
+                              >
+                                {day}
+                              </button>
+                            ))}
+                          </div>
+                        : null }
                       </div>
 
                     )}
@@ -142,22 +172,41 @@ function TaskCard({ task, dragHandleProps }) {
 
         {/* 완료된 서브 태스크 섹션 */}
         {completedSubTasks.length > 0 && (
-          <div className="mt-4">
-            <Button onClick={() => setIsCompletedVisible(!isCompletedVisible)}>
-              {isCompletedVisible ? '▼ 완료됨' : '▲ 완료됨'}
-            </Button>
+          <div className="grid mt-2 p-2">
+            <div className="flex justify-between items-center pr-1">
+              <p className="text-xl font-bold">완료 항목</p>
+              <button
+                className="rounded-lg p-2 text-white bg-blue-500 hover:bg-blue-600" 
+                onClick={() => setIsCompletedVisible(!isCompletedVisible)}
+              >
+                {isCompletedVisible ? 
+                  <FaArrowDown style={{ width: '16px', height: '16px'}} /> 
+                :
+                  <FaArrowUp style={{ width: '16px', height: '16px'}} />
+                }
+              </button>
+            </div>
+            
             {isCompletedVisible && (
               <div>
                 {completedSubTasks.map((subTask, index) => (
-                  <div key={subTask.id} className="flex mt-3 hover:rounded-lg hover:bg-gray-100">
-                    <InputCheck
-                      shape="round"
-                      checked={subTask.isChecked}
-                      onChange={() => updateSubTaskCheck(task.id, subTask.id, !subTask.isChecked)}
-                    />
-                    <p className="w-10/12 line-through text-gray-500">{subTask.text}</p>
-
-                    <Button onClick={() => deleteSubTask(task.id, subTask.id)}><RiDeleteBin5Line /></Button>
+                  <div key={subTask.id} className="flex justify-between mt-2">
+                    <div className="flex items-center gap-1">
+                      <InputCheck
+                        shape="round"
+                        checked={subTask.isChecked}
+                        onChange={() => updateSubTaskCheck(task.id, subTask.id, !subTask.isChecked)}
+                      />
+                      <p className="text-base font-semibold text-gray-400">{subTask.text}</p>
+                    </div>
+                    <div className="pr-1">
+                      <button
+                        className="rounded-lg p-2 text-white bg-rose-600 hover:bg-rose-700" 
+                        onClick={() => deleteSubTask(task.id, subTask.id)}
+                      >
+                        <FaTrashAlt style={{ width: '16px', height: '16px' }}/>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -167,24 +216,30 @@ function TaskCard({ task, dragHandleProps }) {
       </div>
 
       {/* Modal for adding or editing subtasks */}
-      <Modal isOpen={open} onClose={() => setOpen(false)} closeBtn={true}>
-        <div>
-          <p className="font-semibold text-lg text-center mb-4">
-            {isEditing ? '서브 태스크 수정하기' : '서브 태스크 추가하기'}
-          </p>
-
-          <InputField
-            placeholder="서브 태스크 입력"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                isEditing ? handleUpdateSubTaskTitle() : handleAddSubTask();
-              }
-            }}
-          />
-
-          <div className="flex justify-around text-center">
+      <Modal
+        width={400}
+        height={250} 
+        isOpen={open}
+        closeBtn={true}
+        onClose={() => setOpen(false)} 
+      >
+        <div className="grid gap-3">
+          <div>
+            <p className="text-lg font-bold indent-1 mb-2">
+              {isEditing ? '서브 태스크 수정하기' : '서브 태스크 추가하기'}
+            </p>
+            <InputField
+              placeholder="서브 태스크 입력"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  isEditing ? handleUpdateSubTaskTitle() : handleAddSubTask();
+                }
+              }}
+            />
+          </div>
+          <div className="flex justify-end gap-3">
             <Button
               color="green"
               onClick={() => {
@@ -193,6 +248,12 @@ function TaskCard({ task, dragHandleProps }) {
               }}
             >
               완료
+            </Button>
+            <Button
+              color="red"
+              onClick={() => setOpen(false)} 
+            >
+              취소
             </Button>
           </div>
         </div>
