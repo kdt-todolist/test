@@ -153,10 +153,19 @@ function TaskCard({ task, dragHandleProps }) {
                             </Button>
                           </div>
                         </div>
-                        {/* 날짜 선택 박스 */}
                         {showRoutine ?
-                          <>
-                            <div className="flex justify-end gap-2 p-2">
+                          <div className="flex items-center justify-between p-2">
+                             {/* 시간 선택 */}
+                             <div className="">
+                              <input
+                                type="time"
+                                className="bg-transparent border rounded-lg p-2"
+                                value={timeMap[subTask.id] || ''}
+                                onChange={(e) => handleTimeChange(subTask.id, e.target.value)}
+                              />
+                            </div>
+                            {/* 날짜 선택 박스 */}
+                            <div className="flex justify-end gap-1">
                               {days.map((day) => (
                                 <button
                                   key={day}
@@ -167,16 +176,7 @@ function TaskCard({ task, dragHandleProps }) {
                                 </button>
                               ))}
                             </div>
-                            {/* 시간 선택 */}
-                            <div className="flex justify-end mt-2">
-                              <input
-                                type="time"
-                                className="bg-transparent border rounded p-1"
-                                value={timeMap[subTask.id] || ''}
-                                onChange={(e) => handleTimeChange(subTask.id, e.target.value)}
-                              />
-                            </div>
-                          </>
+                          </div>
                           : null}
                       </div>
 
