@@ -1,3 +1,6 @@
+import { FaTrashAlt } from "react-icons/fa";
+import { FaPencilAlt } from "react-icons/fa";
+import { FaPlusCircle } from "react-icons/fa";
 import { BsPlusCircleDotted } from "react-icons/bs";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { RiDeleteBin5Line } from "react-icons/ri";
@@ -53,21 +56,22 @@ function TaskDrawer() {
 
   return (
     <>
-      <div>
+      <div className="grid gap-y-3 mt-5 px-5">
         <button
-          className="w-full h-8 mt-2 p-2 flex items-center hover:text-blue-600 hover:rounded-lg hover:bg-gray-200"
-          onClick={() => setOpen(true)} // 모달 열기
+          onClick={() => setOpen(true)} 
+          className="flex items-center justify-center p-3 rounded-lg text-lg tracking-widest transition duration-300 ease-in-out
+          bg-blue-600 hover:bg-blue-700"
         >
-          <BsPlusCircleDotted />
-          <p className="ml-2">새 목록 만들기</p>
+          <FaPlusCircle style={{ width: '24px', height: '24px', marginRight: '10px' }}/>
+          새 목록 만들기
         </button>
-
         {/* Drag and Drop Context */}
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="task-list">
             {(provided) => (
               <div
-                className="lists w-64"
+                className="grid gap-3"
+                // className="lists w-64"
                 {...provided.droppableProps}
                 ref={provided.innerRef}
               >
@@ -78,28 +82,40 @@ function TaskDrawer() {
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
-                        className="h-8 mt-3 flex items-center hover:rounded-lg hover:bg-gray-200"
+                        className="flex items-center justify-between p-3 rounded-lg tracking-widest transition duration-300 ease-in-out
+                        bg-blue-600 hover:bg-blue-700"
+                        // className="h-8 mt-3 flex items-center hover:rounded-lg hover:bg-gray-200"
                       >
-                        <InputCheck
-                          checked={task.isChecked} // 체크 상태 유지
-                          onChange={() => updateTaskCheck(task.id, !task.isChecked)} // 체크 상태 변경
-                        />
-                        <p className="w-10/12">
-                          {task.text.length > 10 ? task.text.slice(0, 10) + '...' : task.text} {/* 제목 표시 */}
-                        </p>
-                        <Button
-                          onClick={() => {
-                            setCurrentTaskId(task.id); // 현재 Task ID 설정
-                            setInputValue(task.text); // 입력 필드 값 설정
-                            setIsEditing(true); // 편집 모드 활성화
-                            setOpen(true); // 모달 열기
-                          }}
-                        >
-                          <MdOutlineModeEdit />
-                        </Button>
-                        <Button onClick={() => deleteTask(task.id)}> {/* Task 삭제 */}
-                          <RiDeleteBin5Line />
-                        </Button>
+                        <div className="flex items-center">
+                          <InputCheck
+                            checked={task.isChecked} // 체크 상태 유지
+                            onChange={() => updateTaskCheck(task.id, !task.isChecked)} // 체크 상태 변경
+                          />
+                          <p className="indent-3">
+                            {task.text.length > 9 ? task.text.slice(0, 9) + '...' : task.text} {/* 제목 표시 */}
+                          </p>
+                        </div>
+                        <div className="flex items-center">
+                          <Button
+                            size="sm"
+                            color="transparent"
+                            onClick={() => {
+                              setCurrentTaskId(task.id); // 현재 Task ID 설정
+                              setInputValue(task.text); // 입력 필드 값 설정
+                              setIsEditing(true); // 편집 모드 활성화
+                              setOpen(true); // 모달 열기
+                            }}
+                          >
+                            <FaPencilAlt style={{ width: '18px', height: '18px' }}/>
+                          </Button>
+                          <Button 
+                            size="sm"
+                            color="transparent"
+                            onClick={() => deleteTask(task.id)}
+                          > {/* Task 삭제 */}
+                            <FaTrashAlt style={{ width: '18px', height: '18px' }}/>
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </Draggable>
@@ -112,22 +128,30 @@ function TaskDrawer() {
       </div>
 
       {/* Task 추가/수정 모달 */}
-      <Modal isOpen={open} onClose={() => setOpen(false)} closeBtn={true}>
-        <div>
-          <p className="font-semibold text-lg text-center mb-4">
-            {isEditing ? '목록 수정하기' : '새 목록 만들기'}
-          </p>
-          <InputField
-            placeholder="목록 이름 입력"
-            value={inputValue} // 입력 필드 값
-            onChange={(e) => setInputValue(e.target.value)} // 입력 필드 변경 처리
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                isEditing ? handleUpdateTaskTitle() : handleAddTask(); // 엔터 키로 Task 추가/수정
-              }
-            }}
-          />
-          <div className="flex justify-around text-center">
+      <Modal
+        width={400}
+        height={250}
+        isOpen={open} 
+        closeBtn={false}
+        onClose={() => setOpen(false)} 
+      >
+        <div className="grid gap-3">
+          <div>
+            <p className="text-lg indent-1 mb-2 tracking-wider">
+              {isEditing ? "목록 수정하기" : "새 목록 만들기"}
+            </p>
+            <InputField
+              placeholder="목록 이름 입력"
+              value={inputValue} // 입력 필드 값
+              onChange={(e) => setInputValue(e.target.value)} // 입력 필드 변경 처리
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  isEditing ? handleUpdateTaskTitle() : handleAddTask(); // 엔터 키로 Task 추가/수정
+                }
+              }}
+            />
+          </div>
+          <div className="flex justify-end gap-3">
             <Button
               color="green"
               onClick={() => {
@@ -136,7 +160,14 @@ function TaskDrawer() {
             >
               완료
             </Button>
+            <Button
+              color="red"
+              onClick={() => setOpen(false)} 
+            >
+              취소
+            </Button>
           </div>
+          
         </div>
       </Modal>
     </>

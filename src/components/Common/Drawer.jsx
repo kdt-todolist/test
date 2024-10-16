@@ -8,11 +8,11 @@ import LoginFrom from "../Auth/LoginForm";
 
 const StyledDrawer = styled.div`
   width: ${(p) => p.width}px;
-  height: 100vh;
+  height: 100dvh;
   color: #FFFFFF;
   font-weight: 600;
   background-color: rgb(59 130 246);
-  transition-duration: 0.5s;
+  transition: all 0.3s;
   box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
 `;
 
@@ -33,7 +33,7 @@ function Drawer({ children }) {
   }, []);
 
   // Drawer 너비 설정: 창 너비에 비례하도록 설정
-  const drawerWidth = open ? Math.max(windowWidth * 0.18, 250) : 70; // 창 너비의 30% 또는 최대 300px
+  const drawerWidth = open ? Math.max(windowWidth * 0.18, 300) : 70; // 창 너비의 30% 또는 최대 300px
 
   const toggleDrawer = () => {
     setOpen(!open);
@@ -42,27 +42,47 @@ function Drawer({ children }) {
   return (
     <>
       <StyledDrawer width={drawerWidth}>
-        <div className="flex justify-end p-2">
-          <Button 
-            size="md"
-            color="transparent"
-            onClick={() => setLogin(true)}
-          >
-            <FontAwesomeIcon icon={faRightToBracket} />
-          </Button>
-          <Button 
-            size="md"
-            color="transparent"
-            onClick={toggleDrawer}
-          >
-            <FontAwesomeIcon icon={faBars} />
-          </Button>
-        </div>
+        { open ? 
+          <div className="flex justify-end p-2">
+            <Button 
+              size="md"
+              color="transparent"
+              onClick={() => setLogin(true)}
+            >
+              <FontAwesomeIcon icon={faRightToBracket} />
+            </Button>
+            <Button 
+              size="md"
+              color="transparent"
+              onClick={toggleDrawer}
+            >
+              <FontAwesomeIcon icon={faBars} />
+            </Button>
+          </div>
+        : 
+          <div className="grid gap-5 p-2">
+            <Button 
+              size="md"
+              color="transparent"
+              onClick={toggleDrawer}
+            >
+              <FontAwesomeIcon icon={faBars} />
+            </Button>
+            <Button 
+              size="md"
+              color="transparent"
+              onClick={() => setLogin(true)}
+            >
+              <FontAwesomeIcon icon={faRightToBracket} />
+            </Button>
+          </div>
+        }
+        
         {open && children}
       </StyledDrawer>
       <Modal 
         width={300}
-        height={300}
+        height={250}
         isOpen={login}
         onClose={() => setLogin(false)}
       >

@@ -10,7 +10,6 @@ const StyledButton = styled.button
   align-items: center;
   border: none;
   cursor: pointer;
-  font-family: "Noto Sans KR", sans-serif;
   color: var(--button-color, rgb(255 255 255));
   font-size: var(--button-font-size, 16px);
   font-weight: var(--button-font-weight, 600);
@@ -33,11 +32,11 @@ const BORDER = {
 const COLOR = {
   red: css`
     --button-bg-color: rgb(239 68 68);
-    --button-hover-bg-color: rgb(185 28 28);
+    --button-hover-bg-color: rgb(220 38 38);
   `,
   green: css`
     --button-bg-color: rgb(34 197 94);
-    --button-hover-bg-color: rgb(21 128 61);
+    --button-hover-bg-color: rgb(22 163 74);
   `,
   yellow: css`
     --button-bg-color: rgb(234 179 8);
@@ -52,8 +51,8 @@ const COLOR = {
     --button-hover-bg-color: rgb(109 40 217);
   `,
   gray: css`
-    --button-bg-color: rgb(107 114 128);
-    --button-hover-bg-color: rgb(55 65 81);
+    --button-bg-color: rgb(100 116 139);
+    --button-hover-bg-color: rgb(71 85 105);
   `,
   transparent: css`
     --button-bg-color: transparent;

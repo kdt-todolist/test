@@ -1,35 +1,18 @@
 import React from 'react';
 import { FaGoogle } from "react-icons/fa";
-import { FaGithubAlt } from 'react-icons/fa';
-import { FaDiscord } from 'react-icons/fa';
 import Button from "../Common/Button";
 
 function LoginFrom(props) {
   return (
     <div className="grid gap-5">
-      <Button
-        size="lg"
-        color="green"
-        border="pill"
-      >
-        <FaGoogle style={{ width: '36px', height: '36px', marginRight: '10px' }}/>
-        구글 로그인
-      </Button>
-      <Button
-        size="lg"
-        color="indigo"
-        border="pill"
-      >
-        <FaDiscord style={{ width: '36px', height: '36px', marginRight: '10px' }}/>
-        디스코드 로그인
-      </Button>
+      <h3 className="text-center text-2xl font-bold">소셜 로그인</h3>
       <Button
         size="lg"
         color="gray"
         border="pill"
       >
-        <FaGithubAlt style={{ width: '36px', height: '36px', marginRight: '10px' }}/>
-        깃허브 로그인
+        <FaGoogle style={{ width: '28px', height: '28px', marginRight: '10px' }}/>
+        구글 로그인
       </Button>
     </div>
   );
