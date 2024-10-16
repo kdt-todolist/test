@@ -23,6 +23,7 @@ function TaskCard({ task, dragHandleProps }) {
   const [isCompletedVisible, setIsCompletedVisible] = useState(true);
   const [showRoutine, setShowRoutine] = useState(false);
   const [selectedDaysMap, setSelectedDaysMap] = useState({});
+  const [timeMap, setTimeMap] = useState({});
   const days = ["월", "화", "수", "목", "금", "토", "일"];
 
   const handleAddSubTask = () => {
@@ -64,6 +65,13 @@ function TaskCard({ task, dragHandleProps }) {
     });
   };
 
+  const handleTimeChange = (subTaskId, time) => {
+    setTimeMap((prev) => ({
+      ...prev,
+      [subTaskId]: time,
+    }));
+  };
+
   const handleRoutineBox = () => {
     setShowRoutine(!showRoutine);
   }
@@ -75,10 +83,10 @@ function TaskCard({ task, dragHandleProps }) {
 
   return (
     <>
-      <div 
-        style={{boxShadow: 'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px'}}
+      <div
+        style={{ boxShadow: 'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px' }}
         className="p-3 bg-white rounded-lg overflow-y-auto">
-        
+
         {/* Only this part (header) will be draggable for task order */}
         <div {...dragHandleProps} className="flex justify-between rounded-lg items-center bg-blue-500 text-white p-3">
           <p className="text-2xl font-bold indent-1">{task.text}</p>
@@ -86,7 +94,7 @@ function TaskCard({ task, dragHandleProps }) {
             className="rounded-full p-1 text-white bg-blue-500 hover:bg-blue-600"
             onClick={() => setOpen(true)}
           >
-            <FaPlusCircle style={{ width: '24px', height: '24px' }}/>
+            <FaPlusCircle style={{ width: '24px', height: '24px' }} />
           </button>
         </div>
 
@@ -127,38 +135,49 @@ function TaskCard({ task, dragHandleProps }) {
                                 setOpen(true);
                               }}
                             >
-                              <FaPencilAlt style={{ color: '#000000', width: '16px', height: '16px' }}/>
+                              <FaPencilAlt style={{ color: '#000000', width: '16px', height: '16px' }} />
                             </Button>
-                            <Button 
+                            <Button
                               size="sm"
                               color="transparent"
                               onClick={() => deleteSubTask(task.id, subTask.id)}
                             >
-                              <FaTrashAlt style={{ color: '#000000', width: '16px', height: '16px' }}/>
+                              <FaTrashAlt style={{ color: '#000000', width: '16px', height: '16px' }} />
                             </Button>
-                            <Button 
+                            <Button
                               size="sm"
                               color="transparent"
                               onClick={() => handleRoutineBox()}
                             >
-                              <MdEventRepeat style={{ color: '#000000', width: '18px', height: '18px' }}/>
+                              <MdEventRepeat style={{ color: '#000000', width: '18px', height: '18px' }} />
                             </Button>
                           </div>
                         </div>
                         {/* 날짜 선택 박스 */}
-                        { showRoutine ? 
-                          <div className="flex justify-end gap-2 p-2">
-                            {days.map((day) => (
-                              <button
-                                key={day}
-                                className={`font-bold p-2 rounded-lg ${selectedDaysMap[subTask.id]?.includes(day) ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-                                onClick={() => toggleDay(subTask.id, day)}
-                              >
-                                {day}
-                              </button>
-                            ))}
-                          </div>
-                        : null }
+                        {showRoutine ?
+                          <>
+                            <div className="flex justify-end gap-2 p-2">
+                              {days.map((day) => (
+                                <button
+                                  key={day}
+                                  className={`font-bold p-2 rounded-lg ${selectedDaysMap[subTask.id]?.includes(day) ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                                  onClick={() => toggleDay(subTask.id, day)}
+                                >
+                                  {day}
+                                </button>
+                              ))}
+                            </div>
+                            {/* 시간 선택 */}
+                            <div className="flex justify-end mt-2">
+                              <input
+                                type="time"
+                                className="bg-transparent border rounded p-1"
+                                value={timeMap[subTask.id] || ''}
+                                onChange={(e) => handleTimeChange(subTask.id, e.target.value)}
+                              />
+                            </div>
+                          </>
+                          : null}
                       </div>
 
                     )}
@@ -176,17 +195,17 @@ function TaskCard({ task, dragHandleProps }) {
             <div className="flex justify-between items-center pr-1">
               <p className="text-xl font-bold">완료 항목</p>
               <button
-                className="rounded-lg p-2 text-white bg-blue-500 hover:bg-blue-600" 
+                className="rounded-lg p-2 text-white bg-blue-500 hover:bg-blue-600"
                 onClick={() => setIsCompletedVisible(!isCompletedVisible)}
               >
-                {isCompletedVisible ? 
-                  <FaArrowDown style={{ width: '16px', height: '16px'}} /> 
-                :
-                  <FaArrowUp style={{ width: '16px', height: '16px'}} />
+                {isCompletedVisible ?
+                  <FaArrowDown style={{ width: '16px', height: '16px' }} />
+                  :
+                  <FaArrowUp style={{ width: '16px', height: '16px' }} />
                 }
               </button>
             </div>
-            
+
             {isCompletedVisible && (
               <div>
                 {completedSubTasks.map((subTask, index) => (
@@ -201,10 +220,10 @@ function TaskCard({ task, dragHandleProps }) {
                     </div>
                     <div className="pr-1">
                       <button
-                        className="rounded-lg p-2 text-white bg-rose-600 hover:bg-rose-700" 
+                        className="rounded-lg p-2 text-white bg-rose-600 hover:bg-rose-700"
                         onClick={() => deleteSubTask(task.id, subTask.id)}
                       >
-                        <FaTrashAlt style={{ width: '16px', height: '16px' }}/>
+                        <FaTrashAlt style={{ width: '16px', height: '16px' }} />
                       </button>
                     </div>
                   </div>
@@ -218,10 +237,10 @@ function TaskCard({ task, dragHandleProps }) {
       {/* Modal for adding or editing subtasks */}
       <Modal
         width={400}
-        height={250} 
+        height={250}
         isOpen={open}
         closeBtn={true}
-        onClose={() => setOpen(false)} 
+        onClose={() => setOpen(false)}
       >
         <div className="grid gap-3">
           <div>
@@ -251,7 +270,7 @@ function TaskCard({ task, dragHandleProps }) {
             </Button>
             <Button
               color="red"
-              onClick={() => setOpen(false)} 
+              onClick={() => setOpen(false)}
             >
               취소
             </Button>
