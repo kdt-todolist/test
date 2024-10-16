@@ -1,15 +1,16 @@
 import React from 'react';
-import TaskPage from './pages/TaskPage';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { TaskProvider } from './contexts/TaskContext';
+import TaskPage from './pages/TaskPage';
 
 function App() {
   return (
-    <AuthProvider>
-    <TaskProvider>
+    <Router>
+    <AuthProvider><TaskProvider>
       <TaskPage />
-    </TaskProvider>
-    </AuthProvider>
+    </TaskProvider></AuthProvider>
+    </Router>
   );
 }
 
