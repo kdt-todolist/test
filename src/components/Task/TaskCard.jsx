@@ -29,7 +29,7 @@ function TaskCard({ task, dragHandleProps }) {
   const handleAddSubTask = () => {
     if (inputValue.trim() === '') return;
 
-    const newSubTask = { id: Date.now(), text: inputValue, isChecked: false };
+    const newSubTask = { id: Date.now(), title: inputValue, isChecked: false, isSynced: false };
     addSubTask(task.id, newSubTask);
     setInputValue('');
     setOpen(false);
@@ -89,7 +89,7 @@ function TaskCard({ task, dragHandleProps }) {
 
         {/* Only this part (header) will be draggable for task order */}
         <div {...dragHandleProps} className="flex justify-between rounded-lg items-center bg-blue-500 text-white p-3">
-          <p className="text-2xl font-bold indent-1">{task.text}</p>
+          <p className="text-2xl font-bold indent-1">{task.title}</p>
           <button
             className="rounded-full p-1 text-white bg-blue-500 hover:bg-blue-600"
             onClick={() => setOpen(true)}
@@ -122,7 +122,7 @@ function TaskCard({ task, dragHandleProps }) {
                               checked={subTask.isChecked}
                               onChange={() => updateSubTaskCheck(task.id, subTask.id, !subTask.isChecked)}
                             />
-                            <p className="text-base font-semibold">{subTask.text}</p>
+                            <p className="text-base font-semibold">{subTask.title}</p>
                           </div>
                           <div className="flex">
                             <Button
@@ -130,7 +130,7 @@ function TaskCard({ task, dragHandleProps }) {
                               color="transparent"
                               onClick={() => {
                                 setCurrentSubTaskId(subTask.id);
-                                setInputValue(subTask.text);
+                                setInputValue(subTask.title);
                                 setIsEditing(true);
                                 setOpen(true);
                               }}
@@ -216,7 +216,7 @@ function TaskCard({ task, dragHandleProps }) {
                         checked={subTask.isChecked}
                         onChange={() => updateSubTaskCheck(task.id, subTask.id, !subTask.isChecked)}
                       />
-                      <p className="text-base font-semibold text-gray-400">{subTask.text}</p>
+                      <p className="text-base font-semibold text-gray-400">{subTask.title}</p>
                     </div>
                     <div className="pr-1">
                       <button

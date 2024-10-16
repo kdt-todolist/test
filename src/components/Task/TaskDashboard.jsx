@@ -6,7 +6,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 const TaskDashboard = () => {
   const { tasks, updateTaskOrder } = useContext(TaskContext);
   const [showCompleted, setShowCompleted] = useState(true); // To toggle between showing completed tasks
-
+  
   // Filter only the checked (completed) tasks
   const completedTasks = tasks.filter(task => task.isChecked);
 

@@ -1,10 +1,10 @@
+import { TaskContext } from '../../contexts/TaskContext'; // TaskContext 가져오기
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd"; // react-beautiful-dnd 라이브러리 가져오기
+
 import { FaTrashAlt } from "react-icons/fa";
 import { FaPencilAlt } from "react-icons/fa";
 import { FaPlusCircle } from "react-icons/fa";
 import { useState, useContext } from "react";
-import { TaskContext } from '../../contexts/TaskContext'; // TaskContext 가져오기
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd"; // react-beautiful-dnd 라이브러리 가져오기
-
 import Modal from "../Common/Modal";
 import Button from "../Common/Button";
 import InputCheck from "../Common/InputCheck";
@@ -21,7 +21,7 @@ function TaskDrawer() {
   const handleAddTask = () => {
     if (inputValue.trim() === '') return; // 빈 입력 방지
 
-    const newTask = { id: Date.now(), text: inputValue, isChecked: false, subTasks: [] }; // 새로운 Task 객체
+    const newTask = { id: Date.now(), title: inputValue, isChecked: false, subTasks: [], isSynced: false }; // 새로운 Task 객체
     addTask(newTask); // Task 추가
     setInputValue(''); // 입력 필드 초기화
     setOpen(false); // 모달 닫기
@@ -89,7 +89,7 @@ function TaskDrawer() {
                             onChange={() => updateTaskCheck(task.id, !task.isChecked)} // 체크 상태 변경
                           />
                           <p className="indent-3">
-                            {task.text.length > 9 ? task.text.slice(0, 9) + '...' : task.text} {/* 제목 표시 */}
+                            {task.title.length > 9 ? task.title.slice(0, 9) + '...' : task.title} {/* 제목 표시 */}
                           </p>
                         </div>
                         <div className="flex items-center">
@@ -98,7 +98,7 @@ function TaskDrawer() {
                             color="transparent"
                             onClick={() => {
                               setCurrentTaskId(task.id); // 현재 Task ID 설정
-                              setInputValue(task.text); // 입력 필드 값 설정
+                              setInputValue(task.title); // 입력 필드 값 설정
                               setIsEditing(true); // 편집 모드 활성화
                               setOpen(true); // 모달 열기
                             }}
