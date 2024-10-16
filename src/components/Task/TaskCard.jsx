@@ -80,7 +80,7 @@ function TaskCard({ task, dragHandleProps }) {
         className="p-3 bg-white rounded-lg overflow-y-auto">
         
         {/* Only this part (header) will be draggable for task order */}
-        <div {...dragHandleProps} className="flex justify-between items-center p-3">
+        <div {...dragHandleProps} className="flex justify-between rounded-lg items-center bg-blue-500 text-white p-3">
           <p className="text-2xl font-bold indent-1">{task.text}</p>
           <button
             className="rounded-full p-1 text-white bg-blue-500 hover:bg-blue-600"
