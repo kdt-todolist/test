@@ -1,9 +1,7 @@
+import { FaEye } from "react-icons/fa";
 import { FaTrashAlt } from "react-icons/fa";
 import { FaPencilAlt } from "react-icons/fa";
 import { FaPlusCircle } from "react-icons/fa";
-import { BsPlusCircleDotted } from "react-icons/bs";
-import { MdOutlineModeEdit } from "react-icons/md";
-import { RiDeleteBin5Line } from "react-icons/ri";
 import { useState, useContext } from "react";
 import { TaskContext } from '../../contexts/TaskContext'; // TaskContext 가져오기
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd"; // react-beautiful-dnd 라이브러리 가져오기

@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { FaEye } from "react-icons/fa6";
 
 // 둥근 체크박스 스타일
 const RoundCheckbox = styled.input`
@@ -32,7 +33,6 @@ const SquareCheckbox = styled.input`
   height: 1.8rem;
   width: 1.8rem;
   margin: 0.25rem; /* space-1 */
-
   background-color: #fff; /* white */
   border: 2px solid #d1d5db; /* gray-300 */
   border-radius: 0.375rem; /* 네모난 모양 */
@@ -40,8 +40,14 @@ const SquareCheckbox = styled.input`
   cursor: pointer;
   
   &:checked {
-    background-color: #2563eb; /* blue-600 */
     border-color: transparent;
+    //background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0 M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7'/%3e%3c/svg%3e");
+    background-size: 100% 100%;
+    background-position: 50%;
+    background-repeat: no-repeat;
+    background-color: rgb(37 99 235);
+    // background-color: rgb(163 230 53);
   }
 
   &:focus {
@@ -71,7 +77,7 @@ const Checkbox = ({ checked, onChange, label, shape }) => {
 
   return (
     <Label>
-      <CheckboxComponent type="checkbox" checked={checked} onChange={onChange} />
+      <CheckboxComponent type="checkbox" checked={checked} onChange={onChange}/>
       {label && <CheckboxLabel>{label}</CheckboxLabel>}
     </Label>
   );
