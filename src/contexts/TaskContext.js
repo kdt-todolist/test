@@ -1,40 +1,25 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 
 export const TaskContext = createContext(null);
 
 export const TaskProvider = ({ children }) => {
-  // 초기 더미 데이터
-  const initialTasks = [
-    {
-      id: 1,
-      text: "Shopping",
-      isChecked: true,
-      subTasks: [
-        { id: 101, text: "Buy milk", isChecked: false },
-        { id: 102, text: "Buy eggs", isChecked: true },
-      ],
-    },
-    {
-      id: 2,
-      text: "Work",
-      isChecked: true,
-      subTasks: [
-        { id: 201, text: "Finish report", isChecked: true },
-        { id: 202, text: "Send email to client", isChecked: false },
-      ],
-    },
-    {
-      id: 3,
-      text: "Workout",
-      isChecked: true,
-      subTasks: [
-        { id: 301, text: "Morning run", isChecked: true },
-        { id: 302, text: "Evening yoga", isChecked: false },
-      ],
-    }
-  ];
+  // 로컬 스토리지에서 Task 데이터를 불러오는 함수
+  const loadTasksFromLocalStorage = () => {
+    const storedTasks = localStorage.getItem('tasks');
+    return storedTasks ? JSON.parse(storedTasks) : [];
+  };
 
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState(loadTasksFromLocalStorage());
+
+  // 로컬 스토리지에 Task 데이터를 저장하는 함수
+  const saveTasksToLocalStorage = (tasks) => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  };
+
+  // Task가 변경될 때마다 로컬 스토리지에 저장
+  useEffect(() => {
+    saveTasksToLocalStorage(tasks);
+  }, [tasks]);
 
   // Task 추가 (기본적으로 체크된 상태로 추가)
   const addTask = (newTask) => {
