@@ -152,7 +152,7 @@ function TaskCard({ task, dragHandleProps }) {
                           </div>
                         </div>
                         {showRoutine ?
-                          <div className="flex items-center justify-between p-2">
+                          <div className="grid gap-2 items-center justify-between p-2">
                              {/* 시간 선택 */}
                              <div className="">
                               <input
@@ -163,7 +163,7 @@ function TaskCard({ task, dragHandleProps }) {
                               />
                             </div>
                             {/* 날짜 선택 박스 */}
-                            <div className="flex justify-end gap-1">
+                            <div className="flex justify-start gap-1 flex-wrap">
                               {days.map((day) => (
                                 <button
                                   key={day}
