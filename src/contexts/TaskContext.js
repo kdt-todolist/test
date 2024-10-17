@@ -1,7 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
 import axios from 'axios';
-import { isVisible } from '@testing-library/user-event/dist/utils';
 
 export const TaskContext = createContext(null);
 
@@ -73,24 +72,24 @@ export const TaskProvider = ({ children }) => {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`  // 인증 토큰 설정
           }
         });
-
+  
         console.log(response.data);
-    
+  
         // 응답에서 리스트 ID를 받아 추가 리스트에 대한 기본 값 설정
-        const addedTask = {
+        const newTask = {  // addedTask 대신 새로운 변수명으로 수정
           ...addedTask,
           id: response.data.insertId
         };
-
-        console.log(addedTask);
-    
+  
+        console.log(newTask);
+  
         // 리스트 상태 업데이트
-        setTasks((prevTasks) => [...prevTasks, addedTask]);
+        setTasks((prevTasks) => [...prevTasks, newTask]);
       } catch (error) {
-        alert('리스트 추가 중 오류가 발생했습니다.');
+        console.error("Error adding task:", error);
       }
     }
-  };
+  };  
 
   const updateTaskTitle = (taskId, newTitle) => {
     setTasks(tasks.map(task =>
