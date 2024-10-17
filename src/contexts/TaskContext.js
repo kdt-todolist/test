@@ -1,9 +1,12 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
-import { loadTasksFromLocalStorage, saveTasksToLocalStorage, initTasksFromLocalStorage } from '../utils/localStorageHelpers';
 import { fetchTasksFromServer, bulkTaskToServer,
   addNewTaskToServer, updateTaskOnServer, deleteTaskFromServer,
   addSubTaskToServer, updateSubTaskOnServer, deleteSubTaskFromServer } from '../api/taskApi';
+import { loadTasksFromLocalStorage, saveTasksToLocalStorage, initTasksFromLocalStorage } from '../utils/localStorageHelpers';
+import { validateLength } from '../utils/validationHelpers';
+  
+const MAX_TITLE_LENGTH = 15;
 
 export const TaskContext = createContext(null);
 
@@ -19,6 +22,8 @@ export const TaskProvider = ({ children }) => {
   };
 
   const addTask = async (addedTask) => {
+    if (!validateLength(addedTask.title, MAX_TITLE_LENGTH, '제목')) return;
+    
     if (!isAuthenticated) {
       setTasks((prevTasks) => [...prevTasks, addedTask]);
     } else {
@@ -28,6 +33,8 @@ export const TaskProvider = ({ children }) => {
   };
 
   const updateTaskTitle = (taskId, newTitle) => {
+    if (!validateLength(newTitle, MAX_TITLE_LENGTH, '제목')) return;
+  
     setTasks(tasks.map(task => (task.id === taskId ? { ...task, title: newTitle } : task)));
     if (isAuthenticated) {
       updateTaskOnServer(taskId, newTitle, accessToken, tasks);
@@ -62,11 +69,15 @@ export const TaskProvider = ({ children }) => {
   };
 
   const addSubTask = async (taskId, newTitle) => {
+    if (!validateLength(newTitle, MAX_TITLE_LENGTH, '하위 항목 제목')) return;
+  
     const addedSubTask = await addSubTaskToServer(taskId, newTitle, isAuthenticated, accessToken);
     setTasks(prevTasks => prevTasks.map(task => task.id === taskId ? { ...task, subTasks: [...task.subTasks, addedSubTask] } : task));
   };
 
   const updateSubTaskTitle = (taskId, subTaskId, newTitle) => {
+    if (!validateLength(newTitle, MAX_TITLE_LENGTH, '하위 항목 제목')) return;
+  
     setTasks(tasks.map(task => task.id === taskId ? { ...task, subTasks: task.subTasks.map(subTask => subTask.id === subTaskId ? { ...subTask, title: newTitle } : subTask) } : task));
     if (isAuthenticated) {
       updateSubTaskOnServer(subTaskId, newTitle, accessToken, tasks, taskId);
