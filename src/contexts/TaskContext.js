@@ -92,55 +92,41 @@ export const TaskProvider = ({ children }) => {
     }
   };
 
-  const updateTask = async (updatedTask) => {
-    if (!isAuthenticated) {
-      console.log("Not Authenticated", updatedTask);
-  
-      // 비로그인 상태에서는 로컬 상태만 업데이트
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === updatedTask.id
-            ? { ...task, title: updatedTask.title, isChecked: updatedTask.isChecked }
-            : task
-        )
-      );
-    } else {
-      console.log("Authenticated", updatedTask);
-  
-      try {
-        // 로그인 상태에서 서버에 업데이트 요청
-        const response = await axios.put(
-          `http://localhost:1009/lists/${updatedTask.id}`,
-          {
-            title: updatedTask.title,
-            isVisible: updatedTask.isChecked,
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-            },
-          }
-        );
-  
-        // 서버에서 반환된 데이터를 사용해 업데이트된 Task 객체 생성
-        const updatedServerTask = {
-          ...updatedTask,
-          id: response.data.insertId || updatedTask.id, // 서버에서 새로운 ID가 반환되면 사용, 없으면 기존 ID 유지
-        };
-  
-        console.log("updatedServerTask", updatedServerTask);
-  
-        // 로컬 상태 업데이트
-        setTasks((prevTasks) =>
-          prevTasks.map((task) =>
-            task.id === updatedServerTask.id
-              ? updatedServerTask // 서버에서 반환된 데이터를 사용해 업데이트
-              : task
-          )
-        );
-      } catch (error) {
-        console.error("Error updating task:", error);
-      }
+  const updateTaskTitle = (taskId, newTitle) => {
+    setTasks(tasks.map(task =>
+      task.id === taskId
+        ? { ...task, title: newTitle }
+        : task
+    ));
+
+    if (isAuthenticated) {
+      axios.put(`http://localhost:1009/lists/${taskId}`, {
+        title: newTitle,
+        isVisible: tasks.find(task => task.id === taskId).isChecked,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+    }
+  };
+
+  const updateTaskCheck = (taskId, isChecked) => {
+    setTasks(tasks.map(task =>
+      task.id === taskId
+        ? { ...task, isChecked }
+        : task
+    ));
+
+    if (isAuthenticated) {
+      axios.put(`http://localhost:1009/lists/${taskId}`, {
+        title: tasks.find(task => task.id === taskId).title,
+        isVisible: isChecked,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
     }
   };
   
@@ -290,7 +276,8 @@ export const TaskProvider = ({ children }) => {
         fetchTasks,
         setTasks,
         addTask,
-        updateTask,
+        updateTaskTitle,
+        updateTaskCheck,
         deleteTask,
         addSubTask,
         updateSubTaskTitle,

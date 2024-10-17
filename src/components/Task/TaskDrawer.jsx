@@ -11,7 +11,7 @@ import InputCheck from "../Common/InputCheck";
 import InputField from "../Common/InputField";
 
 function TaskDrawer() {
-  const { tasks, addTask, updateTask, deleteTask, updateTaskOrder } = useContext(TaskContext); // TaskContext 사용
+  const { tasks, addTask, updateTaskTitle, updateTaskCheck, deleteTask, updateTaskOrder } = useContext(TaskContext); // TaskContext 사용
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState(''); // 입력 값 상태
   const [isEditing, setIsEditing] = useState(false); // 편집 모드
@@ -27,34 +27,18 @@ function TaskDrawer() {
     setOpen(false); // 모달 닫기
   };
 
+  // Task 제목 수정 처리 함수
   const handleUpdateTaskTitle = () => {
-    const currentTask = tasks.find((task) => task.id === currentTaskId);
-    if (!currentTask) return;
+    if (inputValue.trim() === '') return; // 빈 입력 방지
 
-    const updatedTask = {
-      id: currentTask.id,
-      title: inputValue,
-      isChecked: currentTask.isChecked,
-      subTasks: currentTask.subTasks || []
-    };
-
-    console.log(updatedTask);
-
-    updateTask(updatedTask); // Task 제목 업데이트
+    updateTaskTitle(currentTaskId, inputValue); // Task 제목 업데이트
     setInputValue(''); // 입력 필드 초기화
     setIsEditing(false); // 편집 모드 해제
     setOpen(false); // 모달 닫기
   };
 
-  const handleUpdateTaskCheck = (id, title, isChecked, subTasks) => {
-    const updatedTask = {
-      id: id,
-      title: title, // 기존 제목 유지
-      isChecked: isChecked,
-      subTasks: subTasks || []
-    };
-
-    updateTask(updatedTask); // Task 체크 상태 업데이트
+  const handleUpdateTaskCheck = (taskId, isChecked) => {
+    updateTaskCheck(taskId, isChecked); // Task 체크 상태 업데이트
   };
 
   // Drag and Drop이 끝났을 때 호출되는 함수
@@ -104,7 +88,7 @@ function TaskDrawer() {
                         <div className="flex items-center">
                           <InputCheck
                             checked={task.isChecked} // 체크 상태 유지
-                            onChange={() => handleUpdateTaskCheck(task.id, task.title, !task.isChecked, task.subTasks)} // 체크 상태 변경
+                            onChange={() => handleUpdateTaskCheck(task.id, !task.isChecked)} // 체크 상태 변경
                           />
                           <p className="indent-3">
                             {task.title.length > 9 ? task.title.slice(0, 9) + '...' : task.title} {/* 제목 표시 */}
