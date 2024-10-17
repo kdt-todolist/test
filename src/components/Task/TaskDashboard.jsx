@@ -8,8 +8,10 @@ const TaskDashboard = () => {
   const [openRoutineId, setOpenRoutineId] = useState(null); // 관리할 상태 추가
   
   // Filter only the checked (completed) tasks
-  const completedTasks = tasks.filter(task => task.isChecked);
-
+  let completedTasks = [];
+  if (tasks && tasks.length > 0) {
+    completedTasks = tasks.filter(task => task.isChecked);
+  }
   const handleDragEnd = (result) => {
     if (!result.destination) return;
 
