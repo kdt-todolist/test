@@ -2,12 +2,11 @@ import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../contexts/AuthContext"; // AuthContext에서 logout 함수 가져오기
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faBars, faDoorClosed, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRight, faBars, faDoorClosed, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import styled from "styled-components";
 import Modal from "./Modal";
 import Button from "./Button";
 import LoginFrom from "../Auth/LoginForm";
-import { faArrowCircleRight } from "@fortawesome/free-solid-svg-icons/faArrowCircleRight";
 
 const StyledDrawer = styled.div`
   width: ${(p) => p.width}px;
