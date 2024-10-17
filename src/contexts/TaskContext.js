@@ -5,40 +5,64 @@ import axios from 'axios';
 export const TaskContext = createContext(null);
 
 export const TaskProvider = ({ children }) => {
-  const { isAuthenticated, accessToken } = useContext(AuthContext);
-  
+  const { isAuthenticated, accessToken, user, setUser } = useContext(AuthContext);
+
+  // 로컬스토리지 키를 가져오는 함수
+  const getLocalStorageKey = () => {
+    return isAuthenticated ? 'userTasks' : 'guestTasks'; // 로그인 상태와 user 값에 따라 키를 구분
+  };
+
   const loadTasksFromLocalStorage = () => {
-    const storedTasks = localStorage.getItem('tasks');
+    const key = getLocalStorageKey();
+    const storedTasks = localStorage.getItem(key);
     return storedTasks ? JSON.parse(storedTasks) : [];
   };
 
-  const initialTasks = [];
-  const [tasks, setTasks] = useState(loadTasksFromLocalStorage() || initialTasks);
-
   const saveTasksToLocalStorage = (tasks) => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
+    const key = getLocalStorageKey();
+    if (key) {
+      localStorage.setItem(key, JSON.stringify(tasks));
+    }
   };
+
+  const initTasksFromLocalStorage = () => {
+    const key = getLocalStorageKey();
+    if (key) {
+      console.log("initTasksFromLocalStorage", key);
+      localStorage.removeItem(key);
+    }
+  };
+
+  const [tasks, setTasks] = useState([]);
 
   const fetchTasks = async () => {
     try {
-      // 1. 서버로부터 전체 리스트를 가져옴 (subTask는 포함되지 않음)
+      if (!accessToken) return; // accessToken이 없는 경우 조기 종료
+
+      // 서버로부터 전체 리스트를 가져옴
       const { data: serverLists } = await axios.get('http://localhost:1009/lists', {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`, // 올바른 토큰 전달
         },
       });
 
-      // 2. 서버 리스트를 로컬 데이터 구조로 변환 (subTask를 포함)
+      // user_id를 가져와서 setUser로 설정
+      const userId = serverLists[0]?.user_id;
+      if (userId) {
+        setUser(userId); // user 설정
+      }
+
+      // 서버 리스트를 로컬 데이터 구조로 변환 (subTask 포함)
       const formattedServerLists = await Promise.all(
         serverLists.map(async (serverList) => {
           const subTaskResponse = await axios.get(`http://localhost:1009/tasks/${serverList.id}`, {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `Bearer ${accessToken}`, // 올바른 토큰 전달
             },
           });
-  
+
           const serverSubTasks = subTaskResponse.data;
-  
+
           return {
             id: serverList.id,
             title: serverList.title,
@@ -53,43 +77,90 @@ export const TaskProvider = ({ children }) => {
         })
       );
 
-      setTasks(formattedServerLists);
+      console.log("formattedServerLists", formattedServerLists);
+      setTasks(formattedServerLists); // 최종적으로 상태 업데이트
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching tasks:", error); // 오류 처리
+    }
+  };
+
+  const bulkTask = async () => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    try {
+      const lists = loadTasksFromLocalStorage();
+
+      const formattedLists = lists.map((list) => ({
+        title: list.title,
+        isVisible: list.isChecked,
+      }));
+
+      const taskBulkResponse = await axios.post(
+        'http://localhost:1009/lists/bulk',
+        {
+          lists: formattedLists,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        }
+      );
+
+      await Promise.all(
+        lists.map(async (list, index) => {
+          await axios.post(
+            'http://localhost:1009/tasks/bulk',
+            {
+              listId: taskBulkResponse.data.insertIds[index],
+              tasks: list.subTasks.map((subTask) => ({
+                content: subTask.title,
+                done: subTask.isChecked,
+              })),
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+              },
+            }
+          );
+        })
+      );
+    } catch (error) {
+      console.error('Error adding task:', error);
     }
   };
 
   const addTask = async (addedTask) => {
     if (!isAuthenticated) {
       setTasks((prevTasks) => [...prevTasks, addedTask]);
-    }
-    else {
+    } else {
       try {
-        const response = await axios.post('http://localhost:1009/lists', {
-          title: addedTask.title,  // title만 서버로 전송
-        }, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`  // 인증 토큰 설정
+        const response = await axios.post(
+          'http://localhost:1009/lists',
+          {
+            title: addedTask.title,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            },
           }
-        });
-  
-        console.log(response.data);
-  
-        // 응답에서 리스트 ID를 받아 추가 리스트에 대한 기본 값 설정
-        const newTask = {  // addedTask 대신 새로운 변수명으로 수정
+        );
+
+        const newTask = {
           ...addedTask,
-          id: response.data.insertId
+          id: response.data.insertId,
         };
-  
-        console.log(newTask);
-  
-        // 리스트 상태 업데이트
+
         setTasks((prevTasks) => [...prevTasks, newTask]);
       } catch (error) {
-        console.error("Error adding task:", error);
+        console.error('Error adding task:', error);
       }
     }
-  };  
+  };
 
   const updateTaskTitle = (taskId, newTitle) => {
     setTasks(tasks.map(task =>
@@ -280,16 +351,31 @@ export const TaskProvider = ({ children }) => {
     setTasks(reorderedTasks);
   };
 
-
   useEffect(() => {
-    console.log("isAuthenticated", isAuthenticated);
-    console.log("accessToken", accessToken);
-
-    if (isAuthenticated) {
-      fetchTasks();
+    if (isAuthenticated && accessToken) {
+      console.log("isAuthenticated && accessToken", isAuthenticated, accessToken);
+      fetchTasks(); // accessToken이 있을 때만 fetchTasks 호출
+    } else {
+      initTasksFromLocalStorage();
     }
   }, [isAuthenticated, accessToken]);
 
+  useEffect(() => {
+    const tasksFromLocalStorage = loadTasksFromLocalStorage();
+    setTasks(tasksFromLocalStorage);
+
+    // 로그아웃 이벤트 감지
+    const handleLogout = () => {
+      setTasks([]); // 로그아웃 시 상태 초기화
+    };
+
+    window.addEventListener('logout', handleLogout);
+
+    return () => {
+      window.removeEventListener('logout', handleLogout);
+    };
+  }, []);
+  
   useEffect(() => {
     saveTasksToLocalStorage(tasks);
   }, [tasks]);
@@ -297,7 +383,7 @@ export const TaskProvider = ({ children }) => {
   return (
     <TaskContext.Provider
       value={{
-        tasks,
+        tasks, setTasks,
         fetchTasks,
         setTasks,
         addTask,
