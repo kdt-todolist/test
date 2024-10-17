@@ -28,9 +28,7 @@ function TaskCard({ task, dragHandleProps }) {
 
   const handleAddSubTask = () => {
     if (inputValue.trim() === '') return;
-
-    const newSubTask = { id: Date.now(), title: inputValue, isChecked: false };
-    addSubTask(task.id, newSubTask);
+    addSubTask(task.id, inputValue);
     setInputValue('');
     setOpen(false);
   };

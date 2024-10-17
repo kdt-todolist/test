@@ -150,11 +150,37 @@ export const TaskProvider = ({ children }) => {
     }
   };
 
-  const addSubTask = (taskId, subTask) => {
-    setTasks(
-      tasks.map(task =>
+  const addSubTask = async (taskId, newTitle) => {
+    const addedSubTask = {
+      id: Date.now(), // 임시 ID
+      title: newTitle,
+      isChecked: false,
+    };
+
+    if (isAuthenticated) {
+      try {
+        const response = await axios.post(`http://localhost:1009/tasks`, {
+          content: newTitle,
+          listId: taskId,
+        }, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+        addedSubTask.id = response.data.insertId; // 서버에서 반환된 insertId로 업데이트
+      } catch (error) {
+        console.error('Error adding subTask:', error);
+        return; // 오류 발생 시 추가 작업 중지
+      }
+    }
+
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
         task.id === taskId
-          ? { ...task, subTasks: [...(task.subTasks || []), subTask] }
+          ? {
+              ...task,
+              subTasks: [...task.subTasks, addedSubTask],
+            }
           : task
       )
     );
