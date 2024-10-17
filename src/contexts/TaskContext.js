@@ -14,7 +14,6 @@ export const TaskContext = createContext(null);
 
 export const TaskProvider = ({ children }) => {
   const { isAuthenticated, accessToken, setUser } = useContext(AuthContext);
-
   const [tasks, setTasks] = useState([]);
 
   // useCallback으로 syncTasks를 메모이제이션
