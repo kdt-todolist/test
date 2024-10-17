@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import axios from 'axios';
 import { AuthContext } from './AuthContext';
+import axios from 'axios';
+import { isVisible } from '@testing-library/user-event/dist/utils';
 
 export const TaskContext = createContext(null);
 
@@ -19,27 +20,15 @@ export const TaskProvider = ({ children }) => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   };
 
-  useEffect(() => {
-    saveTasksToLocalStorage(tasks);
-  }, [tasks]);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      syncTasks();
-    }
-  }, [isAuthenticated, accessToken]);
-
-  const syncTasks = async () => {
+  const fetchTasks = async () => {
     try {
       // 1. 서버로부터 전체 리스트를 가져옴 (subTask는 포함되지 않음)
-      const listResponse = await axios.get('http://localhost:1009/lists', {
+      const { data: serverLists } = await axios.get('http://localhost:1009/lists', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-  
-      const serverLists = listResponse.data;
-  
+
       // 2. 서버 리스트를 로컬 데이터 구조로 변환 (subTask를 포함)
       const formattedServerLists = await Promise.all(
         serverLists.map(async (serverList) => {
@@ -64,169 +53,115 @@ export const TaskProvider = ({ children }) => {
           };
         })
       );
-  
-      // 3. 로컬 스토리지에서 데이터를 가져옴
-      const localTasks = loadTasksFromLocalStorage();
-      
-      // 4. 서버 데이터와 로컬 데이터를 비교하여 동기화
-      // 4-1. 로컬에만 있는 데이터를 서버로 추가
-      syncUnsyncedTasks(localTasks);
-      // 4-2. 서버에만 있는 데이터를 로컬에서 삭제
-      // 4-3. 서버와 로컬에 모두 있는 데이터의 상태 업데이트
-    }
-    catch (error) {
-      console.error(error);
-    }
-  };
-  
-  const syncUnsyncedTasks = async (localTasks) => {
-    try {
-      // 동기화되지 않은 로컬 작업 필터링
-      const unsyncedLocalTasks = localTasks.filter((task) => !task.isSynced);
-  
-      // 동기화되지 않은 작업 동기화
-      if (unsyncedLocalTasks.length > 0) {
-        const bulkTaskResponse = await axios.post(
-          'http://localhost:1009/lists/bulk',
-          {
-            lists: unsyncedLocalTasks.map((task) => ({
-              title: task.title,
-              isVisible: task.isChecked,
-            })),
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-  
-        const insertedTaskIds = bulkTaskResponse.data?.insertedIds || [];
-        console.log('삽입된 작업 ID:', insertedTaskIds);
-  
-        // 각 작업에 대해 서브 작업 동기화
-        await Promise.all(
-          unsyncedLocalTasks.map(async (task, index) => {
-            const listId = insertedTaskIds[index];
-            if (listId) {
-              const unsyncedSubTasks = task.subTasks.filter((subTask) => !subTask.isSynced);
-              console.log(`작업 ${listId}의 동기화되지 않은 서브 작업:`, unsyncedSubTasks);
-  
-              if (unsyncedSubTasks.length > 0) {
-                console.log(`/tasks/bulk API에 보낼 서브 작업들:`, unsyncedSubTasks);
-  
-                const bulkSubTaskResponse = await axios.post(
-                  'http://localhost:1009/tasks/bulk',
-                  {
-                    listId: listId,
-                    tasks: unsyncedSubTasks.map((subTask) => ({
-                      content: subTask.title,
-                      done: subTask.isChecked,
-                    })),
-                  },
-                  {
-                    headers: {
-                      Authorization: `Bearer ${accessToken}`,
-                    },
-                  }
-                );
-                
-                console.log('/tasks/bulk API 응답:', bulkSubTaskResponse.data);
-                // 삽입된 서브 작업 ID를 시작점으로 각 서브 작업의 ID를 증가시킴
-                let insertedSubTaskId = bulkSubTaskResponse.data.insertId;
-                console.log('삽입된 서브 작업 시작 ID:', insertedSubTaskId);
-  
-                unsyncedSubTasks.forEach((subTask) => {
-                  subTask.id = insertedSubTaskId++; // ID 할당 후 증가
-                  subTask.isSynced = true; // 동기화 완료로 표시
-                });
-  
-                console.log('동기화 후 업데이트된 서브 작업 ID:', unsyncedSubTasks);
-              }
-  
-              task.isSynced = true;
-              task.id = listId; // 서버 ID로 작업 ID 업데이트
-            }
-          })
-        );
-      }
-  
-      // 이미 동기화된 작업 중 동기화되지 않은 서브 작업이 있는지 확인
-      const syncedTasksWithUnsyncedSubTasks = localTasks.filter(
-        (task) => task.isSynced && task.subTasks.some((subTask) => !subTask.isSynced)
-      );
-  
-      if (syncedTasksWithUnsyncedSubTasks.length > 0) {
-        await Promise.all(
-          syncedTasksWithUnsyncedSubTasks.map(async (task) => {
-            const listId = task.id;
-            const unsyncedSubTasks = task.subTasks.filter((subTask) => !subTask.isSynced);
-            console.log(`이미 동기화된 작업 ${listId}의 동기화되지 않은 서브 작업:`, unsyncedSubTasks);
-  
-            if (unsyncedSubTasks.length > 0) {
-              const bulkSubTaskResponse = await axios.post(
-                'http://localhost:1009/tasks/bulk',
-                {
-                  listId: listId,
-                  tasks: unsyncedSubTasks.map((subTask) => ({
-                    content: subTask.title,
-                    done: subTask.isChecked,
-                  })),
-                },
-                {
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                  },
-                }
-              );
-  
-              // 삽입된 서브 작업 ID를 시작점으로 각 서브 작업의 ID를 증가시킴
-              let insertedSubTaskId = bulkSubTaskResponse.data.insertId;
-              console.log('이미 동기화된 작업에 대한 서브 작업 시작 ID:', insertedSubTaskId);
-  
-              unsyncedSubTasks.forEach((subTask) => {
-                subTask.id = insertedSubTaskId++; // ID 할당 후 증가
-                subTask.isSynced = true; // 동기화 완료로 표시
-              });
-  
-              console.log('이미 동기화된 작업의 서브 작업 동기화 후 업데이트된 ID:', unsyncedSubTasks);
-            }
-          })
-        );
-      }
-  
-      // 선택적으로 업데이트된 로컬 작업을 다시 로컬 스토리지에 저장
-      saveTasksToLocalStorage(localTasks);
-      setTasks(localTasks);
+
+      setTasks(formattedServerLists);
     } catch (error) {
       console.error(error);
     }
   };
 
+  const addTask = async (addedTask) => {
+    if (!isAuthenticated) {
+      setTasks((prevTasks) => [...prevTasks, addedTask]);
+    }
+    else {
+      try {
+        const response = await axios.post('http://localhost:1009/lists', {
+          title: addedTask.title,  // title만 서버로 전송
+        }, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`  // 인증 토큰 설정
+          }
+        });
+
+        console.log(response.data);
+    
+        // 응답에서 리스트 ID를 받아 추가 리스트에 대한 기본 값 설정
+        const addedTask = {
+          ...addedTask,
+          id: response.data.insertId
+        };
+
+        console.log(addedTask);
+    
+        // 리스트 상태 업데이트
+        setTasks((prevTasks) => [...prevTasks, addedTask]);
+      } catch (error) {
+        alert('리스트 추가 중 오류가 발생했습니다.');
+      }
+    }
+  };
+
+  const updateTask = async (updatedTask) => {
+    if (!isAuthenticated) {
+      console.log("Not Authenticated", updatedTask);
   
-  const addTask = (newTask) => {
-    const taskWithChecked = { ...newTask, isChecked: true };
-    setTasks((prevTasks) => [...prevTasks, taskWithChecked]);
+      // 비로그인 상태에서는 로컬 상태만 업데이트
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === updatedTask.id
+            ? { ...task, title: updatedTask.title, isChecked: updatedTask.isChecked }
+            : task
+        )
+      );
+    } else {
+      console.log("Authenticated", updatedTask);
+  
+      try {
+        // 로그인 상태에서 서버에 업데이트 요청
+        const response = await axios.put(
+          `http://localhost:1009/lists/${updatedTask.id}`,
+          {
+            title: updatedTask.title,
+            isVisible: updatedTask.isChecked,
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            },
+          }
+        );
+  
+        // 서버에서 반환된 데이터를 사용해 업데이트된 Task 객체 생성
+        const updatedServerTask = {
+          ...updatedTask,
+          id: response.data.insertId || updatedTask.id, // 서버에서 새로운 ID가 반환되면 사용, 없으면 기존 ID 유지
+        };
+  
+        console.log("updatedServerTask", updatedServerTask);
+  
+        // 로컬 상태 업데이트
+        setTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task.id === updatedServerTask.id
+              ? updatedServerTask // 서버에서 반환된 데이터를 사용해 업데이트
+              : task
+          )
+        );
+      } catch (error) {
+        console.error("Error updating task:", error);
+      }
+    }
   };
-
-  const updateTaskTitle = (taskId, newTitle) => {
-    setTasks(tasks.map(task =>
-      task.id === taskId
-        ? { ...task, title: newTitle }
-        : task
-    ));
-  };
-
-  const updateTaskCheck = (taskId, isChecked) => {
-    setTasks(tasks.map(task =>
-      task.id === taskId
-        ? { ...task, isChecked }
-        : task
-    ));
-  };
+  
 
   const deleteTask = (taskId) => {
-    setTasks(tasks.filter(task => task.id !== taskId));
+    if (!isAuthenticated) {
+      setTasks(tasks.filter(task => task.id !== taskId));
+    } else {
+      try {
+        axios.delete(`http://localhost:1009/lists/${taskId}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+
+        setTasks(tasks.filter(task => task.id !== taskId));
+      }
+      catch (error) {
+        console.error("Error deleting task:", error);
+      }
+    }
   };
 
   const addSubTask = (taskId, subTask) => {
@@ -303,15 +238,28 @@ export const TaskProvider = ({ children }) => {
     setTasks(reorderedTasks);
   };
 
+
+  useEffect(() => {
+    console.log("isAuthenticated", isAuthenticated);
+    console.log("accessToken", accessToken);
+
+    if (isAuthenticated) {
+      fetchTasks();
+    }
+  }, [isAuthenticated, accessToken]);
+
+  useEffect(() => {
+    saveTasksToLocalStorage(tasks);
+  }, [tasks]);
+
   return (
     <TaskContext.Provider
       value={{
         tasks,
-        syncTasks,
+        fetchTasks,
         setTasks,
         addTask,
-        updateTaskTitle,
-        updateTaskCheck,
+        updateTask,
         deleteTask,
         addSubTask,
         updateSubTaskTitle,

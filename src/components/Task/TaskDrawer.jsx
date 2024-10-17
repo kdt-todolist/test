@@ -11,7 +11,7 @@ import InputCheck from "../Common/InputCheck";
 import InputField from "../Common/InputField";
 
 function TaskDrawer() {
-  const { tasks, addTask, updateTaskTitle, updateTaskCheck, deleteTask, updateTaskOrder } = useContext(TaskContext); // TaskContext 사용
+  const { tasks, addTask, updateTask, deleteTask, updateTaskOrder } = useContext(TaskContext); // TaskContext 사용
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState(''); // 입력 값 상태
   const [isEditing, setIsEditing] = useState(false); // 편집 모드
@@ -21,20 +21,40 @@ function TaskDrawer() {
   const handleAddTask = () => {
     if (inputValue.trim() === '') return; // 빈 입력 방지
 
-    const newTask = { id: Date.now(), title: inputValue, isChecked: false, subTasks: [], isSynced: false }; // 새로운 Task 객체
-    addTask(newTask); // Task 추가
+    const addedTask = { id: Date.now(), title: inputValue, isChecked: true, subTasks: [] }; // 새로운 Task 객체
+    addTask(addedTask); // Task 추가
     setInputValue(''); // 입력 필드 초기화
     setOpen(false); // 모달 닫기
   };
 
-  // Task 제목 수정 처리 함수
   const handleUpdateTaskTitle = () => {
-    if (inputValue.trim() === '') return; // 빈 입력 방지
+    const currentTask = tasks.find((task) => task.id === currentTaskId);
+    if (!currentTask) return;
 
-    updateTaskTitle(currentTaskId, inputValue); // Task 제목 업데이트
+    const updatedTask = {
+      id: currentTask.id,
+      title: inputValue,
+      isChecked: currentTask.isChecked,
+      subTasks: currentTask.subTasks || []
+    };
+
+    console.log(updatedTask);
+
+    updateTask(updatedTask); // Task 제목 업데이트
     setInputValue(''); // 입력 필드 초기화
     setIsEditing(false); // 편집 모드 해제
     setOpen(false); // 모달 닫기
+  };
+
+  const handleUpdateTaskCheck = (id, title, isChecked, subTasks) => {
+    const updatedTask = {
+      id: id,
+      title: title, // 기존 제목 유지
+      isChecked: isChecked,
+      subTasks: subTasks || []
+    };
+
+    updateTask(updatedTask); // Task 체크 상태 업데이트
   };
 
   // Drag and Drop이 끝났을 때 호출되는 함수
@@ -79,14 +99,12 @@ function TaskDrawer() {
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
-                        className="flex items-center justify-between p-3 rounded-lg tracking-widest transition duration-300 ease-in-out
-                        bg-blue-600 hover:bg-blue-700"
-                        // className="h-8 mt-3 flex items-center hover:rounded-lg hover:bg-gray-200"
+                        className="flex items-center justify-between p-3 rounded-lg tracking-widest transition duration-300 ease-in-out bg-blue-600 hover:bg-blue-700"
                       >
                         <div className="flex items-center">
                           <InputCheck
                             checked={task.isChecked} // 체크 상태 유지
-                            onChange={() => updateTaskCheck(task.id, !task.isChecked)} // 체크 상태 변경
+                            onChange={() => handleUpdateTaskCheck(task.id, task.title, !task.isChecked, task.subTasks)} // 체크 상태 변경
                           />
                           <p className="indent-3">
                             {task.title.length > 9 ? task.title.slice(0, 9) + '...' : task.title} {/* 제목 표시 */}
