@@ -1,8 +1,7 @@
-import { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { TaskContext } from "../../contexts/TaskContext";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-
-import { FaTrashAlt, FaPlusCircle, FaPencilAlt, FaArrowUp, FaArrowDown } from "react-icons/fa";
+import { FaTrashAlt, FaPlusCircle, FaPencilAlt, FaArrowUp, FaArrowDown, FaPlus } from "react-icons/fa";
 import { MdEventRepeat } from "react-icons/md";
 import Button from "../Common/Button";
 import InputCheck from "../Common/InputCheck";
@@ -20,40 +19,68 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
   const [timeMap, setTimeMap] = useState({});
   const days = ["월", "화", "수", "목", "금", "토", "일"];
 
-  const handleAddSubTask = () => {
-    if (inputValue.trim() === '') return;
-    addSubTask(task.id, inputValue);
-    setInputValue('');
-    setOpen(false);
+  // 루틴 박스가 닫힐 때 (openRoutineId가 null일 때) 선택된 요일과 시간을 초기화
+  useEffect(() => {
+    if (openRoutineId === null || currentSubTaskId) {
+      setSelectedDaysMap((prev) => ({ ...prev, [currentSubTaskId]: [] }));
+      setTimeMap((prev) => ({ ...prev, [currentSubTaskId]: '' }));
+    }
+  }, [openRoutineId, currentSubTaskId]);
+
+  const getCurrentTime = () => {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0'); // 두 자리로 맞춤
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
 
-  const handleUpdateSubTaskTitle = () => {
-    if (inputValue.trim() === '') return;
+  const handleAddRoutine = (subTaskId) => {
+    // 요일이 선택되지 않은 경우 알림
+    if (!selectedDaysMap[subTaskId]?.length) {
+      window.alert('요일을 선택해주세요.');
+      return;
+    }
 
-    updateSubTaskTitle(task.id, currentSubTaskId, inputValue);
-    setInputValue('');
-    setIsEditing(false);
-    setOpen(false);
+    // 시간이 없으면 기본 값 00:00으로 설정
+    const time = timeMap[subTaskId] || '00:00';
+    const routine = {
+      taskId: task.id,
+      week: selectedDaysMap[subTaskId],
+      resetTime: time,
+    };
+
+    console.log(routine);
+
+    // 루틴 추가 후 루틴박스 닫기
+    setOpenRoutineId(null);
+  };
+
+  const handleRoutineBox = (subTaskId) => {
+    if (openRoutineId === subTaskId) {
+      // 루틴 박스를 닫을 때 (이미 열려 있을 때)
+      setOpenRoutineId(null);
+    } else {
+      setOpenRoutineId(subTaskId); // 루틴 박스 열기
+      setCurrentSubTaskId(subTaskId); // 현재 서브 태스크 ID 설정
+    }
   };
 
   const handleSubTaskDragEnd = (result) => {
     if (!result.destination) return;
-
     const reorderedSubTasks = Array.from(task.subTasks);
     const [movedSubTask] = reorderedSubTasks.splice(result.source.index, 1);
     reorderedSubTasks.splice(result.destination.index, 0, movedSubTask);
-
     updateSubTaskOrder(task.id, reorderedSubTasks);
   };
 
-  const toggleDay = (subTaskId, day) => {
+  const toggleDay = (subTaskId, dayIndex) => {
     setSelectedDaysMap((prev) => {
       const currentDays = prev[subTaskId] || [];
-      if (currentDays.includes(day)) {
-        return { ...prev, [subTaskId]: currentDays.filter(d => d !== day) };
-      } else {
-        return { ...prev, [subTaskId]: [...currentDays, day] };
-      }
+      const updatedDays = currentDays.includes(dayIndex)
+        ? currentDays.filter(d => d !== dayIndex)
+        : [...currentDays, dayIndex];
+
+      return { ...prev, [subTaskId]: updatedDays };
     });
   };
 
@@ -64,16 +91,22 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
     }));
   };
 
-  const handleRoutineBox = (subTaskId) => {
-    // 이미 열려있는 경우 닫기
-    if (openRoutineId === subTaskId) {
-      setOpenRoutineId(null);
-    } else {
-      setOpenRoutineId(subTaskId);
-    }
-  }
+  const handleAddSubTask = () => {
+    if (inputValue.trim() === '') return;
+    addSubTask(task.id, inputValue);
+    setInputValue('');
+    setOpen(false);
+  };
 
-  // 완료된 서브 태스크와 미완료 서브 태스크 분리
+  const handleUpdateSubTaskTitle = () => {
+    if (inputValue.trim() === '') return;
+    updateSubTaskTitle(task.id, currentSubTaskId, inputValue);
+    setInputValue('');
+    setIsEditing(false);
+    setOpen(false);
+  };
+
+  // 완료된 서브태스크와 미완료된 서브태스크 분리
   const completedSubTasks = task.subTasks.filter(subTask => subTask.isChecked);
   const incompleteSubTasks = task.subTasks.filter(subTask => !subTask.isChecked);
 
@@ -82,7 +115,6 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
       <div
         style={{ boxShadow: 'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px' }}
         className="p-3 bg-white rounded-lg overflow-y-auto">
-
         {/* Only this part (header) will be draggable for task order */}
         <div {...dragHandleProps} className="flex justify-between rounded-lg items-center bg-blue-500 text-white p-3">
           <p className="text-2xl font-bold indent-1">{task.title}</p>
@@ -152,21 +184,27 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
                         {openRoutineId === subTask.id && (
                           <div className="grid gap-2 items-center justify-between p-2">
                             {/* 시간 선택 */}
-                            <div className="">
+                            <div className="flex gap-2">
                               <input
                                 type="time"
                                 className="bg-transparent border rounded-lg p-2"
-                                value={timeMap[subTask.id] || ''}
+                                value={timeMap[subTask.id] || getCurrentTime()}
                                 onChange={(e) => handleTimeChange(subTask.id, e.target.value)}
                               />
+                              <Button
+                                color="green"
+                                onClick={() => handleAddRoutine(subTask.id)}
+                              >
+                                <FaPlus />
+                              </Button>
                             </div>
                             {/* 날짜 선택 박스 */}
                             <div className="flex justify-start gap-1 flex-wrap">
-                              {days.map((day) => (
+                              {days.map((day, index) => (
                                 <button
-                                  key={day}
-                                  className={`font-bold p-2 rounded-lg ${selectedDaysMap[subTask.id]?.includes(day) ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-                                  onClick={() => toggleDay(subTask.id, day)}
+                                  key={index}
+                                  className={`font-bold p-2 rounded-lg ${selectedDaysMap[subTask.id]?.includes(index) ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                                  onClick={() => toggleDay(subTask.id, index)}
                                 >
                                   {day}
                                 </button>
