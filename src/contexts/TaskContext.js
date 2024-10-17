@@ -42,7 +42,20 @@ export const TaskProvider = ({ children }) => {
   };
 
   const deleteTask = async (taskId) => {
+    // 현재 삭제하려는 task에 하위 태스크가 있는지 확인
+    const taskToDelete = tasks.find(task => task.id === taskId);
+    
+    // 하위 태스크가 있는지 확인하고, 있을 경우 confirm 창 띄우기
+    if (taskToDelete.subTasks && taskToDelete.subTasks.length > 0) {
+      const userConfirmed = window.confirm(`이 목록에는 ${taskToDelete.subTasks.length} 개의 하위 항목이 있습니다.\n한 번 삭제된 목록과 할 일은 복구할 수 없습니다. 정말로 삭제하시겠습니까?`);
+      if (!userConfirmed) {
+        return; // 사용자가 삭제를 원하지 않으면 함수 종료
+      }
+    }
+  
+    // 하위 태스크가 없거나, 사용자가 삭제를 원하면 삭제 진행
     setTasks(tasks.filter(task => task.id !== taskId));
+  
     if (isAuthenticated) {
       await deleteTaskFromServer(taskId, accessToken);
     }
