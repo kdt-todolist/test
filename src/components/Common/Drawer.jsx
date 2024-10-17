@@ -2,11 +2,12 @@ import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../contexts/AuthContext"; // AuthContext에서 logout 함수 가져오기
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faDoorClosed, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight, faBars, faDoorClosed, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import styled from "styled-components";
 import Modal from "./Modal";
 import Button from "./Button";
 import LoginFrom from "../Auth/LoginForm";
+import { faArrowCircleRight } from "@fortawesome/free-solid-svg-icons/faArrowCircleRight";
 
 const StyledDrawer = styled.div`
   width: ${(p) => p.width}px;
@@ -62,8 +63,23 @@ function Drawer({ children }) {
               color="transparent"
               onClick={handleAuthAction}
             >
-              <FontAwesomeIcon
-              icon={isAuthenticated ? faDoorClosed : faDoorOpen } />
+              {isAuthenticated ?
+              <div>
+                <FontAwesomeIcon icon={faDoorOpen} />
+                <FontAwesomeIcon icon={faArrowRight} />
+                
+              </div>
+               : 
+               <div>
+                <FontAwesomeIcon icon={faArrowRight} />
+                <FontAwesomeIcon
+                style={{
+                  transform: 'rotateY(180deg)'
+                }}
+                icon={faDoorOpen} />
+              </div>
+              }
+
             </Button>
             <Button 
               size="md"
@@ -74,21 +90,39 @@ function Drawer({ children }) {
             </Button>
           </div>
         : 
-          <div className="grid gap-5 p-2">
+          <div className="grid gap-1">
             <Button 
               size="md"
               color="transparent"
               onClick={toggleDrawer}
             >
-              <FontAwesomeIcon icon={faBars} />
+              <FontAwesomeIcon
+              style={{
+                padding: '9px'
+              }}
+              icon={faBars} />
             </Button>
             <Button 
               size="md"
               color="transparent"
               onClick={handleAuthAction}
             >
-              <FontAwesomeIcon
-              icon={isAuthenticated ? faDoorClosed : faDoorOpen } />
+              {isAuthenticated ? (
+                <span>
+                  <FontAwesomeIcon icon={faDoorClosed} />
+                  <FontAwesomeIcon icon={faArrowRight} />
+                </span>
+              ) : (
+                <span style={{ display: 'flex', alignItems: 'left' }}>
+                  <FontAwesomeIcon icon={faArrowRight} />
+                  <FontAwesomeIcon
+                  style={{
+                    transform: 'rotateY(180deg)'
+                  }}
+                  icon={faDoorOpen} />
+                </span>
+              )}
+
             </Button>
           </div>
         }
