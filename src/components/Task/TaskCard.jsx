@@ -9,14 +9,13 @@ import InputCheck from "../Common/InputCheck";
 import InputField from "../Common/InputField";
 import Modal from '../Common/Modal';
 
-function TaskCard({ task, dragHandleProps }) {
+function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
   const { updateSubTaskCheck, updateSubTaskTitle, deleteSubTask, addSubTask, updateSubTaskOrder } = useContext(TaskContext);
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [currentSubTaskId, setCurrentSubTaskId] = useState(null);
   const [isCompletedVisible, setIsCompletedVisible] = useState(true);
-  const [showRoutine, setShowRoutine] = useState(false);
   const [selectedDaysMap, setSelectedDaysMap] = useState({});
   const [timeMap, setTimeMap] = useState({});
   const days = ["월", "화", "수", "목", "금", "토", "일"];
@@ -65,10 +64,14 @@ function TaskCard({ task, dragHandleProps }) {
     }));
   };
 
-  const handleRoutineBox = () => {
-    setShowRoutine(!showRoutine);
+  const handleRoutineBox = (subTaskId) => {
+    // 이미 열려있는 경우 닫기
+    if (openRoutineId === subTaskId) {
+      setOpenRoutineId(null);
+    } else {
+      setOpenRoutineId(subTaskId);
+    }
   }
-
 
   // 완료된 서브 태스크와 미완료 서브 태스크 분리
   const completedSubTasks = task.subTasks.filter(subTask => subTask.isChecked);
@@ -140,16 +143,16 @@ function TaskCard({ task, dragHandleProps }) {
                             <Button
                               size="sm"
                               color="transparent"
-                              onClick={() => handleRoutineBox()}
+                              onClick={() => handleRoutineBox(subTask.id)}
                             >
                               <MdEventRepeat style={{ color: '#000000', width: '18px', height: '18px' }} />
                             </Button>
                           </div>
                         </div>
-                        {showRoutine ?
+                        {openRoutineId === subTask.id && (
                           <div className="grid gap-2 items-center justify-between p-2">
-                             {/* 시간 선택 */}
-                             <div className="">
+                            {/* 시간 선택 */}
+                            <div className="">
                               <input
                                 type="time"
                                 className="bg-transparent border rounded-lg p-2"
@@ -170,9 +173,8 @@ function TaskCard({ task, dragHandleProps }) {
                               ))}
                             </div>
                           </div>
-                          : null}
+                        )}
                       </div>
-
                     )}
                   </Draggable>
                 ))}

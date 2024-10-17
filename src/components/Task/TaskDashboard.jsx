@@ -6,6 +6,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 const TaskDashboard = () => {
   const { tasks, updateTaskOrder } = useContext(TaskContext);
   const [showCompleted, setShowCompleted] = useState(true); // To toggle between showing completed tasks
+  const [openRoutineId, setOpenRoutineId] = useState(null); // 관리할 상태 추가
   
   // Filter only the checked (completed) tasks
   const completedTasks = tasks.filter(task => task.isChecked);
@@ -46,6 +47,8 @@ const TaskDashboard = () => {
                       <TaskCard
                         task={task}
                         dragHandleProps={provided.dragHandleProps}
+                        openRoutineId={openRoutineId} // 전달
+                        setOpenRoutineId={setOpenRoutineId} // 전달
                       />
                     </div>
                   )}
