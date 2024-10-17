@@ -66,59 +66,62 @@ function TaskDrawer() {
           <FaPlusCircle style={{ width: '24px', height: '24px', marginRight: '10px' }}/>
           새 목록 만들기
         </button>
-        {/* Drag and Drop Context */}
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="task-list">
             {(provided) => (
               <div
                 className="grid gap-3"
-                // className="lists w-64"
                 {...provided.droppableProps}
                 ref={provided.innerRef}
               >
-                {tasks.map((task, index) => (
-                  <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
-                    {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        className="flex items-center justify-between p-3 rounded-lg tracking-widest transition duration-300 ease-in-out bg-blue-600 hover:bg-blue-700"
-                      >
-                        <div className="flex items-center">
-                          <InputCheck
-                            checked={task.isChecked} // 체크 상태 유지
-                            onChange={() => handleUpdateTaskCheck(task.id, !task.isChecked)} // 체크 상태 변경
-                          />
-                          <p className="indent-3">
-                            {task.title.length > 9 ? task.title.slice(0, 9) + '...' : task.title} {/* 제목 표시 */}
-                          </p>
+                {/* tasks 배열이 null이나 undefined일 경우 빈 배열로 처리 */}
+                {(tasks && tasks.length > 0) ? (
+                  tasks.map((task, index) => (
+                    <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className="flex items-center justify-between p-3 rounded-lg tracking-widest transition duration-300 ease-in-out bg-blue-600 hover:bg-blue-700"
+                        >
+                          <div className="flex items-center">
+                            <InputCheck
+                              checked={task.isChecked} // 체크 상태 유지
+                              onChange={() => handleUpdateTaskCheck(task.id, !task.isChecked)} // 체크 상태 변경
+                            />
+                            <p className="indent-3">
+                              {(task.title || '0').length > 9 ? task.title.slice(0, 9) + '...' : task.title} {/* 제목 표시 */}
+                            </p>
+                          </div>
+                          <div className="flex items-center">
+                            <Button
+                              size="sm"
+                              color="transparent"
+                              onClick={() => {
+                                setCurrentTaskId(task.id); // 현재 Task ID 설정
+                                setInputValue(task.title); // 입력 필드 값 설정
+                                setIsEditing(true); // 편집 모드 활성화
+                                setOpen(true); // 모달 열기
+                              }}
+                            >
+                              <FaPencilAlt style={{ width: '18px', height: '18px' }} />
+                            </Button>
+                            <Button 
+                              size="sm"
+                              color="transparent"
+                              onClick={() => deleteTask(task.id)}
+                            > {/* Task 삭제 */}
+                              <FaTrashAlt style={{ width: '18px', height: '18px' }} />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center">
-                          <Button
-                            size="sm"
-                            color="transparent"
-                            onClick={() => {
-                              setCurrentTaskId(task.id); // 현재 Task ID 설정
-                              setInputValue(task.title); // 입력 필드 값 설정
-                              setIsEditing(true); // 편집 모드 활성화
-                              setOpen(true); // 모달 열기
-                            }}
-                          >
-                            <FaPencilAlt style={{ width: '18px', height: '18px' }}/>
-                          </Button>
-                          <Button 
-                            size="sm"
-                            color="transparent"
-                            onClick={() => deleteTask(task.id)}
-                          > {/* Task 삭제 */}
-                            <FaTrashAlt style={{ width: '18px', height: '18px' }}/>
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
+                      )}
+                    </Draggable>
+                  ))
+                ) : (
+                  <p>등록된 목록이 없습니다.</p> // tasks 배열이 없을 때 표시할 메시지
+                )}
                 {provided.placeholder} {/* Droppable 영역을 유지하기 위해 필요한 placeholder */}
               </div>
             )}

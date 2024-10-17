@@ -20,25 +20,30 @@ export const TaskProvider = ({ children }) => {
 
   const saveTasksToLocalStorage = (tasks) => {
     const key = getLocalStorageKey();
-    if (key) {
+    if (key === 'guestTasks') {
+      if (tasks.length > 0) {
+        localStorage.setItem(key, JSON.stringify(tasks));
+        console.log("Updated guestTasks", tasks);
+      }
+    } else if (key) {
+      // userTasks에 대해서는 덮어쓰기 가능
       localStorage.setItem(key, JSON.stringify(tasks));
+      console.log(`saveTasksToLocalStorage ${key}`, tasks);
     }
   };
 
   const initTasksFromLocalStorage = () => {
     const key = getLocalStorageKey();
-    if (key) {
+    if (key && key !== 'guestTasks') { // guestTasks는 삭제하지 않음
       console.log("initTasksFromLocalStorage", key);
       localStorage.removeItem(key);
     }
-  };
+  };  
 
   const [tasks, setTasks] = useState([]);
 
   const fetchTasks = async () => {
     try {
-      if (!accessToken) return; // accessToken이 없는 경우 조기 종료
-
       // 서버로부터 전체 리스트를 가져옴
       const { data: serverLists } = await axios.get('http://localhost:1009/lists', {
         headers: {
@@ -85,18 +90,34 @@ export const TaskProvider = ({ children }) => {
   };
 
   const bulkTask = async () => {
-    if (!isAuthenticated) {
-      return;
-    }
-
     try {
-      const lists = loadTasksFromLocalStorage();
-
-      const formattedLists = lists.map((list) => ({
+      // 로컬스토리지에서 guestTasks를 가져옴
+      const guestTasks = localStorage.getItem('guestTasks');
+  
+      console.log("bulk guestTasks", guestTasks);
+  
+      // guestTasks가 없거나 null인 경우 처리
+      if (!guestTasks || guestTasks === 'null') {
+        console.log('로컬스토리지에 guestTasks가 없습니다.');
+        return;
+      }
+  
+      // guestTasks를 JSON으로 파싱
+      const parsedGuestTasks = JSON.parse(guestTasks);
+  
+      // 파싱된 데이터가 배열인지, 배열이 비어있는지 확인
+      if (!Array.isArray(parsedGuestTasks) || parsedGuestTasks.length === 0) {
+        console.log("업로드할 유효한 guestTasks가 없습니다.");
+        return;
+      }
+  
+      // 서버에 전송할 형식으로 데이터 변환
+      const formattedLists = parsedGuestTasks.map((list) => ({
         title: list.title,
         isVisible: list.isChecked,
       }));
-
+  
+      // 서버로 리스트 데이터 전송
       const taskBulkResponse = await axios.post(
         'http://localhost:1009/lists/bulk',
         {
@@ -108,29 +129,51 @@ export const TaskProvider = ({ children }) => {
           },
         }
       );
-
+  
+      const insertedListIds = taskBulkResponse.data.insertedIds;
+  
+      // 각 리스트에 대한 서브태스크 전송
       await Promise.all(
-        lists.map(async (list, index) => {
-          await axios.post(
-            'http://localhost:1009/tasks/bulk',
-            {
-              listId: taskBulkResponse.data.insertIds[index],
-              tasks: list.subTasks.map((subTask) => ({
-                content: subTask.title,
-                done: subTask.isChecked,
-              })),
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        parsedGuestTasks.map(async (list, index) => {
+          const subTasks = list.subTasks.map((subTask) => ({
+            content: subTask.title,
+            done: subTask.isChecked,
+          }));
+  
+          console.log("보내는 서브태스크:", subTasks);
+  
+          // 서브태스크가 있을 경우에만 서버로 전송
+          if (subTasks && subTasks.length > 0) {
+            await axios.post(
+              'http://localhost:1009/tasks/bulk',
+              {
+                listId: insertedListIds[index],
+                tasks: subTasks,
               },
-            }
-          );
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                },
+              }
+            );
+          }
         })
       );
+  
+      // bulk 완료 후 guestTasks 초기화
+      localStorage.removeItem('guestTasks');
+      console.log('bulk 업로드 완료 후 guestTasks를 삭제했습니다.');
     } catch (error) {
-      console.error('Error adding task:', error);
+      console.error('태스크 추가 중 오류 발생:', error);
     }
+  };  
+
+  const syncTasks = async () => {
+    // 1. 로컬 스토리지에 있는 데이터를 서버로 전송
+    await bulkTask();
+
+    // 2. 서버로부터 최신 작업 리스트를 가져옴
+    await fetchTasks();
   };
 
   const addTask = async (addedTask) => {
@@ -353,16 +396,14 @@ export const TaskProvider = ({ children }) => {
 
   useEffect(() => {
     if (isAuthenticated && accessToken) {
-      console.log("isAuthenticated && accessToken", isAuthenticated, accessToken);
-      fetchTasks(); // accessToken이 있을 때만 fetchTasks 호출
+      syncTasks();
     } else {
       initTasksFromLocalStorage();
     }
   }, [isAuthenticated, accessToken]);
 
   useEffect(() => {
-    const tasksFromLocalStorage = loadTasksFromLocalStorage();
-    setTasks(tasksFromLocalStorage);
+    setTasks(loadTasksFromLocalStorage());
 
     // 로그아웃 이벤트 감지
     const handleLogout = () => {
