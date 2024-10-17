@@ -1,14 +1,9 @@
-import { FaTrashAlt } from "react-icons/fa";
-import { FaPencilAlt } from "react-icons/fa";
-import { FaPlusCircle } from "react-icons/fa";
-import { MdEventRepeat } from "react-icons/md";
-import { RiDeleteBin5Line } from "react-icons/ri";
-import { FaArrowUp } from "react-icons/fa";
-import { FaArrowDown } from "react-icons/fa";
-
 import { useState, useContext } from "react";
 import { TaskContext } from "../../contexts/TaskContext";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+
+import { FaTrashAlt, FaPlusCircle, FaPencilAlt, FaArrowUp, FaArrowDown } from "react-icons/fa";
+import { MdEventRepeat } from "react-icons/md";
 import Button from "../Common/Button";
 import InputCheck from "../Common/InputCheck";
 import InputField from "../Common/InputField";
