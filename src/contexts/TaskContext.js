@@ -189,6 +189,18 @@ export const TaskProvider = ({ children }) => {
           : task
       )
     );
+
+    if (isAuthenticated) {
+      axios.put(`http://localhost:1009/tasks/${subTaskId}`, {
+        content: newTitle,
+        done: tasks.find(task => task.id === taskId).subTasks.find(subTask => subTask.id === subTaskId).isChecked,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+    }
+
   };
 
   const updateSubTaskCheck = (taskId, subTaskId, isChecked) => {
@@ -206,6 +218,17 @@ export const TaskProvider = ({ children }) => {
           : task
       )
     );
+
+    if (isAuthenticated) {
+      axios.put(`http://localhost:1009/tasks/${subTaskId}`, {
+        content: tasks.find(task => task.id === taskId).subTasks.find(subTask => subTask.id === subTaskId).title,
+        done: isChecked,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+    }
   };
 
   const deleteSubTask = (taskId, subTaskId) => {
@@ -219,6 +242,14 @@ export const TaskProvider = ({ children }) => {
           : task
       )
     );
+
+    if (isAuthenticated) {
+      axios.delete(`http://localhost:1009/tasks/${subTaskId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+    }
   };
 
   const updateSubTaskOrder = (taskId, reorderedSubTasks) => {

@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../../contexts/AuthContext"; // AuthContext에서 logout 함수 가져오기
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faDoorClosed, faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import styled from "styled-components";
 import Modal from "./Modal";
 import Button from "./Button";
@@ -17,6 +19,7 @@ const StyledDrawer = styled.div`
 `;
 
 function Drawer({ children }) {
+  const { isAuthenticated, logout } = useContext(AuthContext); // 로그아웃 함수도 가져오기
   const [open, setOpen] = useState(true);
   const [login, setLogin] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -39,6 +42,16 @@ function Drawer({ children }) {
     setOpen(!open);
   };
 
+  const handleAuthAction = () => {
+    if (isAuthenticated) {
+      // 로그아웃 처리
+      logout(); // AuthContext에서 제공하는 로그아웃 함수 호출
+    } else {
+      // 로그인 모달 열기
+      setLogin(true);
+    }
+  };
+
   return (
     <>
       <StyledDrawer width={drawerWidth}>
@@ -47,9 +60,10 @@ function Drawer({ children }) {
             <Button 
               size="md"
               color="transparent"
-              onClick={() => setLogin(true)}
+              onClick={handleAuthAction}
             >
-              <FontAwesomeIcon icon={faRightToBracket} />
+              <FontAwesomeIcon
+              icon={isAuthenticated ? faDoorClosed : faDoorOpen } />
             </Button>
             <Button 
               size="md"
@@ -71,9 +85,10 @@ function Drawer({ children }) {
             <Button 
               size="md"
               color="transparent"
-              onClick={() => setLogin(true)}
+              onClick={handleAuthAction}
             >
-              <FontAwesomeIcon icon={faRightToBracket} />
+              <FontAwesomeIcon
+              icon={isAuthenticated ? faDoorClosed : faDoorOpen } />
             </Button>
           </div>
         }
@@ -89,7 +104,6 @@ function Drawer({ children }) {
         <LoginFrom />
       </Modal>
     </>
-    
   );
 }
 
