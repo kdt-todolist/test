@@ -52,12 +52,16 @@ function Drawer({ children }) {
       setLogin(true);
     }
   };
-
+  
   return (
     <>
       <StyledDrawer width={drawerWidth}>
         { open ? 
-          <div className="flex justify-end p-2">
+          <div className="flex justify-between items-center p-2">
+            <div className="items-left">
+              <img src="/logo192.png" alt="logo" className="w-16 h-16 mx-4" />
+            </div>
+            <div className="flex space-x-0">
             <Button 
               size="md"
               color="transparent"
@@ -73,21 +77,22 @@ function Drawer({ children }) {
                <div>
                 <FontAwesomeIcon icon={faArrowRight} />
                 <FontAwesomeIcon
-                style={{
-                  transform: 'rotateY(180deg)'
-                }}
-                icon={faDoorOpen} />
-              </div>
-              }
+                    style={{
+                      transform: 'rotateY(180deg)'
+                    }}
+                    icon={faDoorOpen} />
+                  </div>
+                  }
 
-            </Button>
-            <Button 
-              size="md"
-              color="transparent"
-              onClick={toggleDrawer}
-            >
-              <FontAwesomeIcon icon={faBars} />
-            </Button>
+                </Button>
+                <Button 
+                  size="md"
+                  color="transparent"
+                  onClick={toggleDrawer}
+                >
+                  <FontAwesomeIcon icon={faBars} />
+                </Button>
+            </div>
           </div>
         : 
           <div className="grid gap-1">
