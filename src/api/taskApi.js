@@ -1,33 +1,38 @@
 import axios from 'axios';
+import { handleAuthError } from '../utils/authHelpers';
 
 export const fetchTasksFromServer = async (accessToken, setUser) => {
-  const { data: serverLists } = await axios.get('http://localhost:1009/lists', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  try {
+    const { data: serverLists } = await axios.get('http://localhost:1009/lists', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-  const userId = serverLists[0]?.user_id;
-  if (userId) setUser(userId);
+    const userId = serverLists[0]?.user_id;
+    if (userId) setUser(userId);
 
-  return Promise.all(
-    serverLists.map(async (serverList) => {
-      const subTaskResponse = await axios.get(`http://localhost:1009/tasks/${serverList.id}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      const serverSubTasks = subTaskResponse.data;
-      return {
-        id: serverList.id,
-        title: serverList.title,
-        isChecked: serverList.is_visible,
-        subTasks: serverSubTasks.map((subTask) => ({
-          id: subTask.id,
-          title: subTask.content,
-          isChecked: subTask.done,
-        })),
-      };
-    })
-  );
+    return Promise.all(
+      serverLists.map(async (serverList) => {
+        const subTaskResponse = await axios.get(`http://localhost:1009/tasks/${serverList.id}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const serverSubTasks = subTaskResponse.data;
+        return {
+          id: serverList.id,
+          title: serverList.title,
+          isChecked: serverList.is_visible,
+          subTasks: serverSubTasks.map((subTask) => ({
+            id: subTask.id,
+            title: subTask.content,
+            isChecked: subTask.done,
+          })),
+        };
+      })
+    );
+  } catch (error) {
+    if (!handleAuthError(error)) return;
+  }
 };
 
 export const bulkTaskToServer = async (accessToken) => {
@@ -84,65 +89,87 @@ export const bulkTaskToServer = async (accessToken) => {
 
     // bulk 작업 완료 후 로컬스토리지의 guestTasks 삭제
     localStorage.removeItem('guestTasks');
-    console.log('bulk 업로드 완료 후 guestTasks를 삭제했습니다.');
   } catch (error) {
-    console.error('bulkTask 중 오류 발생:', error);
+    if (!handleAuthError(error)) return;
   }
 };
 
-// 서버와의 Task 및 SubTask 통신 함수들
 export const addNewTaskToServer = async (task, accessToken) => {
-  const response = await axios.post(
-    'http://localhost:1009/lists',
-    { title: task.title },
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
-  return { ...task, id: response.data.insertId };
+  try {
+    const response = await axios.post(
+      'http://localhost:1009/lists',
+      { title: task.title },
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    return { ...task, id: response.data.insertId };
+  } catch (error) {
+    if (!handleAuthError(error)) return;
+  }
 };
 
 export const updateTaskOnServer = async (taskId, newValue, accessToken, tasks, isChecked = false) => {
-  const updatedTask = tasks.find(task => task.id === taskId);
-  await axios.put(
-    `http://localhost:1009/lists/${taskId}`,
-    {
-      title: isChecked ? updatedTask.title : newValue,
-      isVisible: isChecked ? newValue : updatedTask.isChecked,
-    },
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
+  try {
+    const updatedTask = tasks.find(task => task.id === taskId);
+    await axios.put(
+      `http://localhost:1009/lists/${taskId}`,
+      {
+        title: isChecked ? updatedTask.title : newValue,
+        isVisible: isChecked ? newValue : updatedTask.isChecked,
+      },
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+  } catch (error) {
+    if (!handleAuthError(error)) return;
+  }
 };
 
 export const deleteTaskFromServer = async (taskId, accessToken) => {
-  await axios.delete(`http://localhost:1009/lists/${taskId}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  try {
+    await axios.delete(`http://localhost:1009/lists/${taskId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  } catch (error) {
+    if (!handleAuthError(error)) return;
+  }
 };
 
 export const addSubTaskToServer = async (taskId, newTitle, isAuthenticated, accessToken) => {
   if (!isAuthenticated) return { id: Date.now(), title: newTitle, isChecked: false };
 
-  const response = await axios.post(
-    'http://localhost:1009/tasks',
-    { content: newTitle, listId: taskId },
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
-  return { id: response.data.insertId, title: newTitle, isChecked: false };
+  try {
+    const response = await axios.post(
+      'http://localhost:1009/tasks',
+      { content: newTitle, listId: taskId },
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    return { id: response.data.insertId, title: newTitle, isChecked: false };
+  } catch (error) {
+    if (!handleAuthError(error)) return;
+  }
 };
 
 export const updateSubTaskOnServer = async (subTaskId, newValue, accessToken, tasks, taskId, isChecked = false) => {
-  const updatedSubTask = tasks.find(task => task.id === taskId).subTasks.find(subTask => subTask.id === subTaskId);
-  await axios.put(
-    `http://localhost:1009/tasks/${subTaskId}`,
-    {
-      content: isChecked ? updatedSubTask.title : newValue,
-      done: isChecked ? newValue : updatedSubTask.isChecked,
-    },
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
+  try {
+    const updatedSubTask = tasks.find(task => task.id === taskId).subTasks.find(subTask => subTask.id === subTaskId);
+    await axios.put(
+      `http://localhost:1009/tasks/${subTaskId}`,
+      {
+        content: isChecked ? updatedSubTask.title : newValue,
+        done: isChecked ? newValue : updatedSubTask.isChecked,
+      },
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+  } catch (error) {
+    if (!handleAuthError(error)) return;
+  }
 };
 
 export const deleteSubTaskFromServer = async (subTaskId, accessToken) => {
-  await axios.delete(`http://localhost:1009/tasks/${subTaskId}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  try {
+    await axios.delete(`http://localhost:1009/tasks/${subTaskId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+  } catch (error) {
+    if (!handleAuthError(error)) return;
+  }
 };

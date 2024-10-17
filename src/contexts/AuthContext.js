@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getTokenExpiration, getStoredToken,
   storeToken, clearStoredToken } from '../utils/authHelpers';
@@ -25,6 +25,18 @@ export const AuthProvider = ({ children }) => {
     }
   }, [location, navigate]);
 
+  // 로그아웃 처리 함수 (useCallback으로 감싸기)
+  const logout = useCallback(() => {
+    clearStoredToken();
+    localStorage.removeItem('userTasks');  // 추가된 데이터 삭제
+    setAccessToken(null);
+    setUser(null);
+    setIsAuthenticated(false);
+
+    window.dispatchEvent(new Event('logout'));  // 로그아웃 이벤트 발생
+    navigate('/');
+  }, [navigate]);
+
   // 토큰의 만료 시간 확인 및 자동 로그아웃 처리
   useEffect(() => {
     const token = getStoredToken();
@@ -40,19 +52,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
       }
     }
-  }, []);
-
-  // 로그아웃 처리 함수
-  const logout = () => {
-    clearStoredToken();
-    localStorage.removeItem('userTasks');  // 추가된 데이터 삭제
-    setAccessToken(null);
-    setUser(null);
-    setIsAuthenticated(false);
-
-    window.dispatchEvent(new Event('logout'));  // 로그아웃 이벤트 발생
-    navigate('/login');
-  };
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{ accessToken, user, setUser, isAuthenticated, logout }}>
