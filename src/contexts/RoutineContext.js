@@ -16,6 +16,9 @@ export const RoutineProvider = ({ children }) => {
     if (!accessToken) return;
     try {
       const fetchedRoutines = await polledRoutinesFromServer(listId, accessToken);
+      console.log('Fetched routines:', fetchedRoutines);
+      const mergedRoutines = mergeRoutines(fetchedRoutines, routines);
+      return mergedRoutines;
     } catch (error) {
       console.error('Failed to load routines:', error);
     }

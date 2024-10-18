@@ -75,7 +75,7 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
 
     if (routineId) {
       await updateRoutine(routineId, week, resetTime);
-      await getRoutine(task.id); // Refetch the updated routine immediately after updating
+      await getRoutine(task.id);
       setOpenRoutineId(null);
     }
   };
