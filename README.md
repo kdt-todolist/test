@@ -26,7 +26,7 @@
 
 3. **루틴 관리**
    - 매일 반복되는 할 일을 루틴으로 추가하여 관리할 수 있습니다.
-   - 매일 00시에 할 일의 상태가 초기화 됩니다.
+   - 지정된 요일과 시간에 할 일의 상태가 초기화 됩니다.
      - ✳ 지나간 할 일은 다시 볼 수 없습니다.
 
 ### 📖 사용 방법
@@ -106,21 +106,36 @@
    git clone `https://github.com/kdt-todolist/todo-front.git)`
    cd todo-front
    ```
-
+   
+   ```bash
+   git clone `https://github.com/kdt-todolist/todo-back.git)`
+   cd todo-back
+   ```
+   
 2. **의존성 설치**
    ```bash
    npm install
    ```
 
 3. **환경 변수 설정**
-   - `.env` 파일을 생성하고 백엔드 API URL 등을 설정합니다.
+   - `todo-back/src/config/.env` 파일을 생성하고 백엔드 API URL 등을 설정합니다.
 
-4. **개발 서버 실행**
-   ```bash
+4. **서버 실행**
+
+- 프론트
+
+  ```bash
    npm start
    ```
-   - 브라우저에서 `http://localhost:3000`으로 접속하여 애플리케이션을 확인할 수 있습니다.
 
+   - 브라우저에서 `http://localhost:3000`으로 접속하여 애플리케이션을 확인할 수 있습니다.
+  
+- 백엔드
+
+   ```bash
+   npm run dev
+   ```
+   
 ### 사용된 기술 스택 🛠️
 
 - **프론트엔드**: React, JavaScript, Tailwind CSS
