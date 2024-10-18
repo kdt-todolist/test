@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { handleAuthError } from '../utils/authHelpers';
 
-export const fetchRoutinesFromServer = async (listId, accessToken) => {
+export const getRoutinesFromServer = async (listId, accessToken) => {
   try {
     const response = await axios.get(`http://localhost:1009/routines/${listId}`, {
       headers: {
@@ -77,14 +77,14 @@ export const updateRoutineOnServer = async (routineId, week, resetTime, accessTo
   }
 };
 
-export const deleteRoutine = async (routineId, taskId, accessToken) => {
+export const deleteRoutineFromServer = async (routineId, taskId, accessToken) => {
   try {
     await axios.delete(`http://localhost:1009/routines/${routineId}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
       data: {
-        taskId,
+        taskId: taskId,
       },
     });
   } catch (error) {

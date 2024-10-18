@@ -4,18 +4,19 @@ import { TaskContext } from "../../contexts/TaskContext";
 import { RoutineContext } from '../../contexts/RoutineContext';
 
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { FaTrashAlt, FaPlusCircle, FaPencilAlt, FaArrowUp, FaArrowDown, FaPlus, FaCalendarCheck, FaEdit } from "react-icons/fa";
+import { FaTrashAlt, FaPlusCircle, FaPencilAlt, FaPlus, FaCalendarCheck, FaEdit, FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { MdEventRepeat } from "react-icons/md";
 import Button from "../Common/Button";
 import InputCheck from "../Common/InputCheck";
 import InputField from "../Common/InputField";
 import Modal from '../Common/Modal';
 import LoginFrom from '../Auth/LoginForm';
+import { loadFromLocalStorage } from "../../utils/localStorageHelpers";
 
 function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
   const { isAuthenticated, user } = useContext(AuthContext);
   const { tasks, updateSubTaskCheck, updateSubTaskTitle, deleteSubTask, addSubTask, updateSubTaskOrder } = useContext(TaskContext);
-  const { routines, addRoutine, updateRoutine, removeRoutine } = useContext(RoutineContext);
+  const { addRoutine, updateRoutine, deleteRoutine } = useContext(RoutineContext);
 
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -25,117 +26,95 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
   const [selectedDaysMap, setSelectedDaysMap] = useState({});
   const [timeMap, setTimeMap] = useState({});
   const days = ["월", "화", "수", "목", "금", "토", "일"];
-
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const getCurrentTime = () => {
-    // 루틴이 없을 때 현재 시간을 반환
     const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0'); // 두 자리로 맞춤
+    const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
   };
 
   const handleAddRoutine = (subTaskId) => {
-    if(!isAuthenticated) {
+    if (!isAuthenticated) {
       setIsLoginModalOpen(true);
       return;
     }
 
-    // 요일이 선택되지 않은 경우 알림
     if (!selectedDaysMap[subTaskId]?.length) {
       window.alert('요일을 선택해주세요.');
       return;
     }
-    // 요일 형식 변환
-    const daysOfWeek = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-    const week = daysOfWeek.reduce((acc, day, index) => {
-      acc[day] = selectedDaysMap[subTaskId].includes(index);
-      return acc;
-    }, {});  
 
-    // 시간이 없으면 기본 값 00:00으로 설정
-    const resetTime = timeMap[subTaskId] || '00:00';
-
-    console.log(subTaskId, week, resetTime);
-    addRoutine(subTaskId, week, resetTime);
-
-    // 루틴 추가 후 루틴박스 닫기
-    setOpenRoutineId(null);
-  };
-
-  const handleUpdateRoutine = (subTaskId) => {
-    // 요일이 선택되지 않은 경우 알림
-    if (!selectedDaysMap[subTaskId]?.length) {
-      window.alert('요일을 선택해주세요.');
-      return;
-    }
-    // 요일 형식 변환
     const daysOfWeek = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
     const week = daysOfWeek.reduce((acc, day, index) => {
       acc[day] = selectedDaysMap[subTaskId].includes(index);
       return acc;
     }, {});
 
-    // 시간이 없으면 기본 값 00:00으로 설정
     const resetTime = timeMap[subTaskId] || '00:00';
-
-    const storedRoutines = JSON.parse(localStorage.getItem(`userRoutines_${user}`)) || [];
-    const routineId = storedRoutines.find(routine => routine.subTaskId === subTaskId).id;
-    
-    console.log("here", routineId, week, resetTime);
-    
-    updateRoutine(routineId, week, resetTime);
-    
-    // 루틴 수정 후 루틴박스 닫기
+    addRoutine(subTaskId, week, resetTime);
     setOpenRoutineId(null);
   };
 
+  const handleUpdateRoutine = (subTaskId) => {
+    if (!selectedDaysMap[subTaskId]?.length) {
+      window.alert('요일을 선택해주세요.');
+      return;
+    }
+
+    const daysOfWeek = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    const week = daysOfWeek.reduce((acc, day, index) => {
+      acc[day] = selectedDaysMap[subTaskId].includes(index);
+      return acc;
+    }, {});
+
+    const resetTime = timeMap[subTaskId] || '00:00';
+    const storedRoutines = loadFromLocalStorage(`userRoutines_${user}`);
+    const routineId = storedRoutines.find(routine => routine.subTaskId === subTaskId)?.id;
+
+    if (routineId) {
+      updateRoutine(routineId, week, resetTime);
+      setOpenRoutineId(null);
+    }
+  };
+
+  const handleDeleteRoutine = (subTaskId) => {
+    const storedRoutines = loadFromLocalStorage(`userRoutines_${user}`);
+    const routineId = storedRoutines.find(routine => routine.subTaskId === subTaskId)?.id;
+
+    if (routineId) {
+      deleteRoutine(routineId, task.id);
+      setOpenRoutineId(null);
+    }
+  };
+
   const handleRoutineBox = (subTaskId) => {
-    // Open routine box only for the given subTaskId
     if (openRoutineId === subTaskId) {
       setOpenRoutineId(null);
     } else {
       setOpenRoutineId(subTaskId);
       setCurrentSubTaskId(subTaskId);
-    
-      // 로컬 스토리지에서 userTasks를 가져오고, 없으면 빈 배열로 처리
-      const storedTasks = JSON.parse(localStorage.getItem(`userTasks_${user}`)) || [];
-  
+
+      const storedTasks = loadFromLocalStorage(`userTasks_${user}`);
       const task = storedTasks.find(task => task.subTasks.some(subTask => subTask.id === subTaskId));
-      
+
       if (task) {
         const subTask = task.subTasks.find(subTask => subTask.id === subTaskId);
-        console.log("1", subTask);
-  
-        if (subTask && subTask.isRoutine && subTask.routines) {
-          // 요일 정보 처리
+
+        if (subTask?.isRoutine && subTask.routines) {
           const daysOfWeek = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
           const selectedDays = daysOfWeek
             .map((day, index) => (subTask.routines[day] ? index : null))
-            .filter(index => index !== null); // 선택된 요일 인덱스를 추출
-          
-          console.log("2", selectedDays);
-          // selectedDaysMap과 timeMap에 저장
-          setSelectedDaysMap((prev) => ({
-            ...prev,
-            [subTaskId]: selectedDays // 선택된 요일 저장
-          }));
-  
-          // 시간 정보 처리
-          const time = subTask.routines.resetTime.split(':').slice(0, 2).join(':'); // '07:20:00' -> '07:20'
-  
-          setTimeMap((prev) => ({
-            ...prev,
-            [subTaskId]: time // 시간 저장
-          }));
+            .filter(index => index !== null);
+
+          setSelectedDaysMap((prev) => ({ ...prev, [subTaskId]: selectedDays }));
+          setTimeMap((prev) => ({ ...prev, [subTaskId]: subTask.routines.resetTime.split(':').slice(0, 2).join(':') }));
         }
       }
     }
   };
-  
-  
-  
+
   const handleSubTaskDragEnd = (result) => {
     if (!result.destination) return;
     const reorderedSubTasks = Array.from(task.subTasks);
@@ -153,42 +132,33 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
 
       return { ...prev, [subTaskId]: updatedDays };
     });
-
-    console.log('Updated selectedDaysMap:', selectedDaysMap);
   };
 
   const handleTimeChange = (subTaskId, time) => {
-    setTimeMap((prev) => ({
-      ...prev,
-      [subTaskId]: time,
-    }));
+    setTimeMap((prev) => ({ ...prev, [subTaskId]: time }));
   };
 
   const handleAddSubTask = () => {
-    if (inputValue.trim() === '') return;
+    if (!inputValue.trim()) return;
     addSubTask(task.id, inputValue);
     setInputValue('');
     setOpen(false);
   };
 
   const handleUpdateSubTaskTitle = () => {
-    if (inputValue.trim() === '') return;
+    if (!inputValue.trim()) return;
     updateSubTaskTitle(task.id, currentSubTaskId, inputValue);
     setInputValue('');
     setIsEditing(false);
     setOpen(false);
   };
 
-  // 완료된 서브태스크와 미완료된 서브태스크 분리
   const completedSubTasks = task.subTasks.filter(subTask => subTask.isChecked);
   const incompleteSubTasks = task.subTasks.filter(subTask => !subTask.isChecked);
 
   return (
     <>
-      <div
-        style={{ boxShadow: 'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px' }}
-        className="p-3 bg-white rounded-lg overflow-y-auto">
-        {/* Only this part (header) will be draggable for task order */}
+      <div className="p-3 bg-white rounded-lg overflow-y-auto" style={{ boxShadow: 'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px' }}>
         <div {...dragHandleProps} className="flex justify-between rounded-lg items-center bg-blue-500 text-white p-3">
           <p className="text-2xl font-bold indent-1">{task.title}</p>
           <button
@@ -251,21 +221,16 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
                               color="transparent"
                               onClick={() => handleRoutineBox(subTask.id)}
                             >
-                              {subTask.isRoutine ?
-                                <FaCalendarCheck style={{
-                                  borderRadius: '20%',
-                                  color: 'gray', width: '16px', height: '16px' }} /> :
-                                <MdEventRepeat
-                                style={{
-                                  color: '#000000',
-                                  width: '18px', height: '18px' }} />
-                              }
+                              {subTask.isRoutine ? (
+                                <FaCalendarCheck style={{ borderRadius: '20%', color: 'gray', width: '16px', height: '16px' }} />
+                              ) : (
+                                <MdEventRepeat style={{ color: '#000000', width: '18px', height: '18px' }} />
+                              )}
                             </Button>
                           </div>
                         </div>
                         {openRoutineId === subTask.id && (
                           <div className="grid gap-2 items-center justify-between p-2">
-                            {/* 시간 선택 */}
                             <div className="flex gap-2">
                               <input
                                 type="time"
@@ -284,14 +249,12 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
                                 <Button
                                   size="sm"
                                   color="red"
-                                  onClick={() => removeRoutine(subTask.id, task.id)}
+                                  onClick={() => handleDeleteRoutine(subTask.id)}
                                 >
                                   <FaTrashAlt />
                                 </Button>
                               )}
                             </div>
-
-                            {/* 날짜 선택 박스 */}
                             <div className="flex justify-start gap-1 flex-wrap">
                               {days.map((day, index) => (
                                 <button
@@ -303,7 +266,6 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
                                 </button>
                               ))}
                             </div>
-
                           </div>
                         )}
                       </div>
@@ -316,7 +278,6 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
           </Droppable>
         </DragDropContext>
 
-        {/* 완료된 서브 태스크 섹션 */}
         {completedSubTasks.length > 0 && (
           <div className="grid mt-2 p-2">
             <div className="flex justify-between items-center pr-1">
@@ -325,14 +286,13 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
                 className="rounded-lg p-2 text-white bg-blue-500 hover:bg-blue-600"
                 onClick={() => setIsCompletedVisible(!isCompletedVisible)}
               >
-                {isCompletedVisible ?
+                {isCompletedVisible ? (
                   <FaArrowDown style={{ width: '16px', height: '16px' }} />
-                  :
+                ) : (
                   <FaArrowUp style={{ width: '16px', height: '16px' }} />
-                }
+                )}
               </button>
             </div>
-
             {isCompletedVisible && (
               <div>
                 {completedSubTasks.map((subTask, index) => (
@@ -361,14 +321,7 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
         )}
       </div>
 
-      {/* Modal for adding or editing subtasks */}
-      <Modal
-        width={400}
-        height={250}
-        isOpen={open}
-        closeBtn={true}
-        onClose={() => setOpen(false)}
-      >
+      <Modal width={400} height={250} isOpen={open} closeBtn={true} onClose={() => setOpen(false)}>
         <div className="grid gap-3">
           <div>
             <p className="text-lg font-bold indent-1 mb-2">
@@ -386,34 +339,16 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
             />
           </div>
           <div className="flex justify-end gap-3">
-            <Button
-              color="green"
-              onClick={() => {
-                isEditing ? handleUpdateSubTaskTitle() : handleAddSubTask();
-                setOpen(false);
-              }}
-            >
+            <Button color="green" onClick={() => { isEditing ? handleUpdateSubTaskTitle() : handleAddSubTask(); setOpen(false); }}>
               완료
             </Button>
-            <Button
-              color="red"
-              onClick={() => setOpen(false)}
-            >
-              취소
-            </Button>
+            <Button color="red" onClick={() => setOpen(false)}>취소</Button>
           </div>
         </div>
       </Modal>
 
-      <Modal 
-        width={300}
-        height={250}
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-      >
-        <LoginFrom
-          placeholder="로그인 후 이용할 수 있는 서비스입니다."
-        />
+      <Modal width={300} height={250} isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)}>
+        <LoginFrom placeholder="로그인 후 이용할 수 있는 서비스입니다." />
       </Modal>
     </>
   );

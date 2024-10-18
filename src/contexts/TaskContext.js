@@ -105,14 +105,12 @@ export const TaskProvider = ({ children }) => {
     setTasks(tasks.map(task => task.id === taskId ? { ...task, subTasks: reorderedSubTasks } : task));
   };
 
-  // Sync tasks from server or localStorage based on auth state
   useEffect(() => {
     if (isAuthenticated && accessToken) {
       syncTasks();
     }
   }, [isAuthenticated, accessToken, syncTasks]);
 
-  // Load tasks from localStorage on initial mount
   useEffect(() => {
     setTasks(loadTasksFromLocalStorage(isAuthenticated, user));
 
@@ -123,7 +121,6 @@ export const TaskProvider = ({ children }) => {
     return () => window.removeEventListener('logout', handleLogout);
   }, [isAuthenticated]);
 
-  // Save tasks to localStorage whenever tasks or auth state change
   useEffect(() => {
     saveTasksToLocalStorage(tasks, isAuthenticated, user);
   }, [tasks, isAuthenticated]);
