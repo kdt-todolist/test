@@ -92,3 +92,24 @@ export const deleteRoutineFromServer = async (routineId, taskId, accessToken) =>
     throw error;
   }
 };
+
+export const polledRoutinesFromServer = async (listId, accessToken) => {
+  try {
+    const response = await axios.get(`http://localhost:1009/routines/${listId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const pooledRoutines = response.data.map((routine) => ({
+      subTaskId: routine.id,
+      listId: routine.list_id,
+      isDone: routine.done,
+    }));
+
+    return pooledRoutines;
+  } catch (error) {
+    if (!handleAuthError(error)) return;
+    throw error;
+  }
+};

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getRoutinesFromServer, addNewRoutineToServer, updateRoutineOnServer, deleteRoutineFromServer } from '../api/routineApi';
+import { getRoutinesFromServer, addNewRoutineToServer,
+  updateRoutineOnServer, deleteRoutineFromServer, polledRoutinesFromServer } from '../api/routineApi';
 import { AuthContext } from './AuthContext';
 import { TaskContext } from './TaskContext';
 import { loadFromLocalStorage, saveToLocalStorage, mergeRoutines } from '../utils/localStorageHelpers';
@@ -8,7 +9,7 @@ export const RoutineContext = createContext();
 
 export const RoutineProvider = ({ children }) => {
   const { isAuthenticated, accessToken, user } = useContext(AuthContext);
-  const { setTasks } = useContext(TaskContext);
+  const { tasks, setTasks } = useContext(TaskContext);
   const [routines, setRoutines] = useState([]);
 
   const getRoutine = async (listId) => {
@@ -102,6 +103,72 @@ export const RoutineProvider = ({ children }) => {
       saveToLocalStorage(`userRoutines_${user}`, mergedRoutines);
     }
   }, [routines, isAuthenticated, user]);
+
+  const pollRoutines = async (listId) => {
+    if (!accessToken) return;
+
+    try {
+      const polledRoutines = await polledRoutinesFromServer(listId, accessToken);
+
+      // 받은 데이터와 기존 데이터를 병합
+      setTasks((prevTasks) => {
+        return prevTasks.map((task) => ({
+          ...task,
+          subTasks: task.subTasks.map((subTask) => {
+            const matchedRoutine = polledRoutines.find((routine) => routine.subTaskId === subTask.id);
+            return matchedRoutine
+              ? { ...subTask, isChecked: matchedRoutine.isDone === 1 } // isChecked를 isDone에 맞게 업데이트
+              : subTask;
+          }),
+        }));
+      });
+    } catch (error) {
+      console.error("Error polling routines:", error);
+    }
+  };
+
+  const pollAllLists = async () => {
+    try {
+      // 모든 listId를 tasks에서 추출
+      const listIds = tasks.map(task => task.id);
+
+      console.log("Polling all lists:", listIds);
+      
+      // 각 listId에 대해 pollRoutines 실행
+      await Promise.all(
+        listIds.map(async (listId) => {
+          await pollRoutines(listId);
+        })
+      );
+    } catch (error) {
+      console.error("Error polling all lists:", error);
+    }
+  };
+
+  // 루틴 데이터를 1분마다 풀링하는 useEffect
+  useEffect(() => {
+    if (!isAuthenticated || !user || !accessToken) return;
+  
+    // 현재 시간과 다음 정각(1분이 끝나는 시각)까지의 차이를 계산
+    const now = new Date();
+    const timeUntilNextMinute = (60 - now.getSeconds()) * 1000; // 초 단위로 계산한 후 밀리초로 변환
+  
+    // 첫 풀링은 현재 시각과 다음 정각 사이에 맞춰 실행
+    const timeoutId = setTimeout(() => {
+      pollAllLists();
+  
+      // 그 후에는 정확히 1분마다 풀링 실행
+      const intervalId = setInterval(() => {
+        pollAllLists();
+      }, 60000);
+  
+      // 컴포넌트 언마운트 시 인터벌 중단
+      return () => clearInterval(intervalId);
+    }, timeUntilNextMinute); // 다음 정각까지 기다린 후 실행
+  
+    // 컴포넌트 언마운트 시 timeout 중단
+    return () => clearTimeout(timeoutId);
+  }, [isAuthenticated, user, accessToken]);
 
   return (
     <RoutineContext.Provider value={{ routines, getRoutine, addRoutine, updateRoutine, deleteRoutine }}>
