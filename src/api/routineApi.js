@@ -1,14 +1,21 @@
 import axios from 'axios';
 import { handleAuthError } from '../utils/authHelpers';
 
-export const getRoutinesFromServer = async (listId, accessToken) => {
+export const polledRoutinesFromServer = async (listId, accessToken) => {
   try {
     const response = await axios.get(`http://localhost:1009/routines/${listId}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    return response.data;
+
+    const pooledRoutines = response.data.map((routine) => ({
+      subTaskId: routine.id,
+      listId: routine.list_id,
+      isDone: routine.done,
+    }));
+
+    return pooledRoutines;
   } catch (error) {
     if (!handleAuthError(error)) return;
     throw error;
