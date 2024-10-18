@@ -160,18 +160,14 @@ export const RoutineProvider = ({ children }) => {
     if (!isAuthenticated || !user || !accessToken) return;
   
     // 현재 시간과 다음 정각(1분이 끝나는 시각)까지의 차이를 계산
-    const now = new Date();
-    const timeUntilNextMinute = (60 - now.getSeconds()) * 1000; // 초 단위로 계산한 후 밀리초로 변환
-  
     // 첫 풀링은 현재 시각과 다음 정각 사이에 맞춰 실행
-    const timeoutId = setTimeout(() => {
-      pollAllLists();
-  
-      // 그 후에는 정확히 1분마다 풀링 실행
-      const intervalId = setInterval(() => {
+    // 그 후에는 정확히 1분마다 풀링 실행
+    const intervalId = setInterval(() => {
+      const now = new Date();
+      if (now.getSeconds() === 5 ) {
         pollAllLists();
-      }, 60000);
-    }, timeUntilNextMinute); // 다음 정각까지 기다린 후 실행
+      }
+    }, 1000);
   }, [isAuthenticated, user, accessToken]);
 
   return (
