@@ -16,7 +16,7 @@ export const getTokenExpiration = (token) => {
 
   export const handleAuthError = (error) => {
     if (error.response?.status === 401) {
-      window.ok('로그인 시간이 만료되었습니다. 다시 로그인해주세요.');
+      window.confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')
     }
     console.error('서버와의 통신 오류:', error);
     return true;
