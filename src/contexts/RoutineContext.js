@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { polledRoutinesFromServer, addNewRoutineToServer, updateRoutineOnServer, deleteRoutineFromServer } from '../api/routineApi';
+import { getRoutinesFromServer, addNewRoutineToServer,
+  updateRoutineOnServer, deleteRoutineFromServer, polledRoutinesFromServer } from '../api/routineApi';
 import { AuthContext } from './AuthContext';
 import { TaskContext } from './TaskContext';
 import { loadFromLocalStorage, saveToLocalStorage, mergeRoutines } from '../utils/localStorageHelpers';
@@ -10,6 +11,16 @@ export const RoutineProvider = ({ children }) => {
   const { isAuthenticated, accessToken, user } = useContext(AuthContext);
   const { tasks, setTasks } = useContext(TaskContext);
   const [routines, setRoutines] = useState([]);
+
+  const getRoutine = async (listId) => {
+    if (!accessToken) return;
+    try {
+      const fetchedRoutines = await getRoutinesFromServer(listId, accessToken);
+      setRoutines(fetchedRoutines);
+    } catch (error) {
+      console.error('Failed to load routines:', error);
+    }
+  };
 
   const addRoutine = async (subTaskId, week, resetTime) => {
     if (!accessToken) return;
@@ -85,7 +96,14 @@ export const RoutineProvider = ({ children }) => {
     }
   };
 
-  // 풀링 함수 정의
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const existingRoutines = loadFromLocalStorage(`userRoutines_${user}`);
+      const mergedRoutines = mergeRoutines(existingRoutines, routines);
+      saveToLocalStorage(`userRoutines_${user}`, mergedRoutines);
+    }
+  }, [routines, isAuthenticated, user]);
+
   const pollRoutines = async (listId) => {
     if (!accessToken) return;
 
@@ -153,7 +171,7 @@ export const RoutineProvider = ({ children }) => {
   }, [isAuthenticated, user, accessToken]);
 
   return (
-    <RoutineContext.Provider value={{ routines, addRoutine, updateRoutine, deleteRoutine }}>
+    <RoutineContext.Provider value={{ routines, getRoutine, addRoutine, updateRoutine, deleteRoutine }}>
       {children}
     </RoutineContext.Provider>
   );
