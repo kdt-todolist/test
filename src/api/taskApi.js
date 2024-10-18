@@ -21,11 +21,22 @@ export const fetchTasksFromServer = async (accessToken, setUser) => {
         return {
           id: serverList.id,
           title: serverList.title,
-          isChecked: serverList.is_visible,
+          isChecked: serverList.is_visible === 1,
           subTasks: serverSubTasks.map((subTask) => ({
             id: subTask.id,
             title: subTask.content,
-            isChecked: subTask.done,
+            isChecked: subTask.done === 1,
+            isRoutine: subTask.is_routine === 1,
+            routines: {
+              mon: subTask.mon === 1,
+              tue: subTask.tue === 1,
+              wed: subTask.wed === 1,
+              thu: subTask.thu === 1,
+              fri: subTask.fri === 1,
+              sat: subTask.sat === 1,
+              sun: subTask.sun === 1,
+              resetTime: subTask.reset_time
+            }
           })),
         };
       })

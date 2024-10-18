@@ -1,15 +1,22 @@
 import React, { useState, useContext, useEffect } from "react";
+import { AuthContext } from "../../contexts/AuthContext";
 import { TaskContext } from "../../contexts/TaskContext";
+import { RoutineContext } from '../../contexts/RoutineContext';
+
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { FaTrashAlt, FaPlusCircle, FaPencilAlt, FaArrowUp, FaArrowDown, FaPlus } from "react-icons/fa";
+import { FaTrashAlt, FaPlusCircle, FaPencilAlt, FaArrowUp, FaArrowDown, FaPlus, FaCalendarCheck, FaEdit } from "react-icons/fa";
 import { MdEventRepeat } from "react-icons/md";
 import Button from "../Common/Button";
 import InputCheck from "../Common/InputCheck";
 import InputField from "../Common/InputField";
 import Modal from '../Common/Modal';
+import LoginFrom from '../Auth/LoginForm';
 
 function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
-  const { updateSubTaskCheck, updateSubTaskTitle, deleteSubTask, addSubTask, updateSubTaskOrder } = useContext(TaskContext);
+  const { isAuthenticated, user } = useContext(AuthContext);
+  const { tasks, updateSubTaskCheck, updateSubTaskTitle, deleteSubTask, addSubTask, updateSubTaskOrder } = useContext(TaskContext);
+  const { routines, addRoutine, updateRoutine, removeRoutine } = useContext(RoutineContext);
+
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -19,15 +26,10 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
   const [timeMap, setTimeMap] = useState({});
   const days = ["월", "화", "수", "목", "금", "토", "일"];
 
-  // 루틴 박스가 닫힐 때 (openRoutineId가 null일 때) 선택된 요일과 시간을 초기화
-  useEffect(() => {
-    if (openRoutineId === null || currentSubTaskId) {
-      setSelectedDaysMap((prev) => ({ ...prev, [currentSubTaskId]: [] }));
-      setTimeMap((prev) => ({ ...prev, [currentSubTaskId]: '' }));
-    }
-  }, [openRoutineId, currentSubTaskId]);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const getCurrentTime = () => {
+    // 루틴이 없을 때 현재 시간을 반환
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0'); // 두 자리로 맞춤
     const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -35,36 +37,105 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
   };
 
   const handleAddRoutine = (subTaskId) => {
+    if(!isAuthenticated) {
+      setIsLoginModalOpen(true);
+      return;
+    }
+
     // 요일이 선택되지 않은 경우 알림
     if (!selectedDaysMap[subTaskId]?.length) {
       window.alert('요일을 선택해주세요.');
       return;
     }
+    // 요일 형식 변환
+    const daysOfWeek = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    const week = daysOfWeek.reduce((acc, day, index) => {
+      acc[day] = selectedDaysMap[subTaskId].includes(index);
+      return acc;
+    }, {});  
 
     // 시간이 없으면 기본 값 00:00으로 설정
-    const time = timeMap[subTaskId] || '00:00';
-    const routine = {
-      taskId: task.id,
-      week: selectedDaysMap[subTaskId],
-      resetTime: time,
-    };
+    const resetTime = timeMap[subTaskId] || '00:00';
 
-    console.log(routine);
+    console.log(subTaskId, week, resetTime);
+    addRoutine(subTaskId, week, resetTime);
 
     // 루틴 추가 후 루틴박스 닫기
     setOpenRoutineId(null);
   };
 
-  const handleRoutineBox = (subTaskId) => {
-    if (openRoutineId === subTaskId) {
-      // 루틴 박스를 닫을 때 (이미 열려 있을 때)
-      setOpenRoutineId(null);
-    } else {
-      setOpenRoutineId(subTaskId); // 루틴 박스 열기
-      setCurrentSubTaskId(subTaskId); // 현재 서브 태스크 ID 설정
+  const handleUpdateRoutine = (subTaskId) => {
+    // 요일이 선택되지 않은 경우 알림
+    if (!selectedDaysMap[subTaskId]?.length) {
+      window.alert('요일을 선택해주세요.');
+      return;
     }
+    // 요일 형식 변환
+    const daysOfWeek = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    const week = daysOfWeek.reduce((acc, day, index) => {
+      acc[day] = selectedDaysMap[subTaskId].includes(index);
+      return acc;
+    }, {});
+
+    // 시간이 없으면 기본 값 00:00으로 설정
+    const resetTime = timeMap[subTaskId] || '00:00';
+
+    const storedRoutines = JSON.parse(localStorage.getItem(`userRoutines_${user}`)) || [];
+    const routineId = storedRoutines.find(routine => routine.subTaskId === subTaskId).id;
+    
+    console.log("here", routineId, week, resetTime);
+    
+    updateRoutine(routineId, week, resetTime);
+    
+    // 루틴 수정 후 루틴박스 닫기
+    setOpenRoutineId(null);
   };
 
+  const handleRoutineBox = (subTaskId) => {
+    // Open routine box only for the given subTaskId
+    if (openRoutineId === subTaskId) {
+      setOpenRoutineId(null);
+    } else {
+      setOpenRoutineId(subTaskId);
+      setCurrentSubTaskId(subTaskId);
+    
+      // 로컬 스토리지에서 userTasks를 가져오고, 없으면 빈 배열로 처리
+      const storedTasks = JSON.parse(localStorage.getItem(`userTasks_${user}`)) || [];
+  
+      const task = storedTasks.find(task => task.subTasks.some(subTask => subTask.id === subTaskId));
+      
+      if (task) {
+        const subTask = task.subTasks.find(subTask => subTask.id === subTaskId);
+        console.log("1", subTask);
+  
+        if (subTask && subTask.isRoutine && subTask.routines) {
+          // 요일 정보 처리
+          const daysOfWeek = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+          const selectedDays = daysOfWeek
+            .map((day, index) => (subTask.routines[day] ? index : null))
+            .filter(index => index !== null); // 선택된 요일 인덱스를 추출
+          
+          console.log("2", selectedDays);
+          // selectedDaysMap과 timeMap에 저장
+          setSelectedDaysMap((prev) => ({
+            ...prev,
+            [subTaskId]: selectedDays // 선택된 요일 저장
+          }));
+  
+          // 시간 정보 처리
+          const time = subTask.routines.resetTime.split(':').slice(0, 2).join(':'); // '07:20:00' -> '07:20'
+  
+          setTimeMap((prev) => ({
+            ...prev,
+            [subTaskId]: time // 시간 저장
+          }));
+        }
+      }
+    }
+  };
+  
+  
+  
   const handleSubTaskDragEnd = (result) => {
     if (!result.destination) return;
     const reorderedSubTasks = Array.from(task.subTasks);
@@ -82,6 +153,8 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
 
       return { ...prev, [subTaskId]: updatedDays };
     });
+
+    console.log('Updated selectedDaysMap:', selectedDaysMap);
   };
 
   const handleTimeChange = (subTaskId, time) => {
@@ -141,6 +214,7 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
                         style={{
                           ...provided.draggableProps.style,
                           opacity: snapshot.isDragging ? 0.5 : 1,
+                          backgroundColor: openRoutineId === subTask.id ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
                         }}
                       >
                         <div className="flex justify-between p-2">
@@ -177,7 +251,15 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
                               color="transparent"
                               onClick={() => handleRoutineBox(subTask.id)}
                             >
-                              <MdEventRepeat style={{ color: '#000000', width: '18px', height: '18px' }} />
+                              {subTask.isRoutine ?
+                                <FaCalendarCheck style={{
+                                  borderRadius: '20%',
+                                  color: 'gray', width: '16px', height: '16px' }} /> :
+                                <MdEventRepeat
+                                style={{
+                                  color: '#000000',
+                                  width: '18px', height: '18px' }} />
+                              }
                             </Button>
                           </div>
                         </div>
@@ -192,12 +274,23 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
                                 onChange={(e) => handleTimeChange(subTask.id, e.target.value)}
                               />
                               <Button
-                                color="green"
-                                onClick={() => handleAddRoutine(subTask.id)}
+                                size="sm"
+                                color={subTask.isRoutine ? "yellow" : "green"}
+                                onClick={() => subTask.isRoutine ? handleUpdateRoutine(subTask.id) : handleAddRoutine(subTask.id)}
                               >
-                                <FaPlus />
+                                {subTask.isRoutine ? <FaEdit /> : <FaPlus />}
                               </Button>
+                              {subTask.isRoutine && (
+                                <Button
+                                  size="sm"
+                                  color="red"
+                                  onClick={() => removeRoutine(subTask.id, task.id)}
+                                >
+                                  <FaTrashAlt />
+                                </Button>
+                              )}
                             </div>
+
                             {/* 날짜 선택 박스 */}
                             <div className="flex justify-start gap-1 flex-wrap">
                               {days.map((day, index) => (
@@ -210,6 +303,7 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
                                 </button>
                               ))}
                             </div>
+
                           </div>
                         )}
                       </div>
@@ -309,6 +403,17 @@ function TaskCard({ task, dragHandleProps, openRoutineId, setOpenRoutineId }) {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      <Modal 
+        width={300}
+        height={250}
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      >
+        <LoginFrom
+          placeholder="로그인 후 이용할 수 있는 서비스입니다."
+        />
       </Modal>
     </>
   );

@@ -5,7 +5,7 @@ import {
   addNewTaskToServer, updateTaskOnServer, deleteTaskFromServer,
   addSubTaskToServer, updateSubTaskOnServer, deleteSubTaskFromServer
 } from '../api/taskApi';
-import { loadTasksFromLocalStorage, saveTasksToLocalStorage, initTasksFromLocalStorage } from '../utils/localStorageHelpers';
+import { loadTasksFromLocalStorage, saveTasksToLocalStorage } from '../utils/localStorageHelpers';
 import { validateLength } from '../utils/validationHelpers';
   
 const MAX_TITLE_LENGTH = 15;
@@ -13,7 +13,7 @@ const MAX_TITLE_LENGTH = 15;
 export const TaskContext = createContext(null);
 
 export const TaskProvider = ({ children }) => {
-  const { isAuthenticated, accessToken, setUser } = useContext(AuthContext);
+  const { isAuthenticated, accessToken, user, setUser } = useContext(AuthContext);
   const [tasks, setTasks] = useState([]);
 
   // useCallback으로 syncTasks를 메모이제이션
@@ -109,14 +109,12 @@ export const TaskProvider = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated && accessToken) {
       syncTasks();
-    } else {
-      initTasksFromLocalStorage();
     }
   }, [isAuthenticated, accessToken, syncTasks]);
 
   // Load tasks from localStorage on initial mount
   useEffect(() => {
-    setTasks(loadTasksFromLocalStorage(isAuthenticated));
+    setTasks(loadTasksFromLocalStorage(isAuthenticated, user));
 
     const handleLogout = () => setTasks([]);
 
@@ -127,7 +125,7 @@ export const TaskProvider = ({ children }) => {
 
   // Save tasks to localStorage whenever tasks or auth state change
   useEffect(() => {
-    saveTasksToLocalStorage(tasks, isAuthenticated);
+    saveTasksToLocalStorage(tasks, isAuthenticated, user);
   }, [tasks, isAuthenticated]);
 
   return (
