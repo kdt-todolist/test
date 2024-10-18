@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getRoutinesFromServer, addNewRoutineToServer,
-  updateRoutineOnServer, deleteRoutineFromServer, polledRoutinesFromServer } from '../api/routineApi';
+import { polledRoutinesFromServer, addNewRoutineToServer,
+  updateRoutineOnServer, deleteRoutineFromServer } from '../api/routineApi';
 import { AuthContext } from './AuthContext';
 import { TaskContext } from './TaskContext';
 import { loadFromLocalStorage, saveToLocalStorage, mergeRoutines } from '../utils/localStorageHelpers';
@@ -15,8 +15,7 @@ export const RoutineProvider = ({ children }) => {
   const getRoutine = async (listId) => {
     if (!accessToken) return;
     try {
-      const fetchedRoutines = await getRoutinesFromServer(listId, accessToken);
-      setRoutines(fetchedRoutines);
+      const fetchedRoutines = await polledRoutinesFromServer(listId, accessToken);
     } catch (error) {
       console.error('Failed to load routines:', error);
     }
@@ -26,7 +25,14 @@ export const RoutineProvider = ({ children }) => {
     if (!accessToken) return;
     try {
       const newRoutine = await addNewRoutineToServer(subTaskId, week, resetTime, accessToken);
-      setRoutines((prevRoutines) => [...prevRoutines, newRoutine]);
+      
+      setRoutines((prevRoutines) =>
+        prevRoutines.some((routine) => routine.subTaskId === subTaskId)
+          ? prevRoutines.map((routine) =>
+              routine.subTaskId === subTaskId ? newRoutine : routine
+            )
+          : [...prevRoutines, newRoutine]
+      );  
 
       setTasks((prevTasks) =>
         prevTasks.map((task) => ({
@@ -130,7 +136,8 @@ export const RoutineProvider = ({ children }) => {
   const pollAllLists = async () => {
     try {
       // 모든 listId를 tasks에서 추출
-      const listIds = tasks.map(task => task.id);
+      const storedTasks = loadFromLocalStorage(`userTasks_${user}`);
+      const listIds = storedTasks.map((task) => task.id);
 
       console.log("Polling all lists:", listIds);
       
@@ -161,13 +168,7 @@ export const RoutineProvider = ({ children }) => {
       const intervalId = setInterval(() => {
         pollAllLists();
       }, 60000);
-  
-      // 컴포넌트 언마운트 시 인터벌 중단
-      return () => clearInterval(intervalId);
     }, timeUntilNextMinute); // 다음 정각까지 기다린 후 실행
-  
-    // 컴포넌트 언마운트 시 timeout 중단
-    return () => clearTimeout(timeoutId);
   }, [isAuthenticated, user, accessToken]);
 
   return (
